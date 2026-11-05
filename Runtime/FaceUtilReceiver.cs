@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Poyo.Kaotsuki
+namespace Poyo.FaceUtil
 {
     /// <summary>アバターの表情を OSC から操作するための設定。アップロード時には取り除かれる。</summary>
     [DisallowMultipleComponent]
-    [AddComponentMenu("Kaotsuki/Kaotsuki Receiver")]
-    public sealed class KaotsukiReceiver : MonoBehaviour, VRC.SDKBase.IEditorOnly
+    [AddComponentMenu("Poyo's Face Util/Face Util Receiver")]
+    public sealed class FaceUtilReceiver : MonoBehaviour, VRC.SDKBase.IEditorOnly
     {
-        public List<KaotsukiMeshEntry> meshes = new List<KaotsukiMeshEntry>();
+        public List<FaceUtilMeshEntry> meshes = new List<FaceUtilMeshEntry>();
 
         // ON の間、まばたき・視線を止める。
         public bool overrideEyes = true;

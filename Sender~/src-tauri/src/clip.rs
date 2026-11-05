@@ -249,7 +249,7 @@ pub fn save(
     let name = path
         .file_stem()
         .and_then(|name| name.to_str())
-        .unwrap_or("Kaotsuki");
+        .unwrap_or("FaceUtil");
     fs::write(path, render(name, &curves))
         .map_err(|error| format!("AnimationClip を保存できませんでした: {error}"))?;
     Ok(curves.len())
@@ -333,7 +333,7 @@ mod tests {
 
     fn with_file(test: impl FnOnce(&Path)) {
         let path = std::env::temp_dir().join(format!(
-            "kaotsuki-clip-test-{}-{}.anim",
+            "face-util-clip-test-{}-{}.anim",
             std::process::id(),
             NEXT_ID.fetch_add(1, Ordering::Relaxed)
         ));
@@ -577,7 +577,7 @@ mod tests {
             let clip = load(path).expect("load saved");
             assert_eq!(clip.entries[1].weight, 100.0);
             save(path, &map, |_, _| Some(0)).expect("overwrite clip");
-            let json = r#"{"format":"kaotsuki-expression"}"#;
+            let json = r#"{"format":"face-util-expression"}"#;
             fs::write(path, json).expect("write JSON");
             assert_eq!(
                 save(path, &map, |_, _| None).err().as_deref(),

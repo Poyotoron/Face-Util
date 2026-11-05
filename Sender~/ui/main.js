@@ -132,8 +132,8 @@ async function loadMap(path) {
     settings.lastMapPath = path;
     renderSlots(map);
     elements.mapInfo.textContent = map.channelCount >= 2
-      ? `${map.mapName} — ${map.slots.length} スロット（${map.channelCount} 枠）`
-      : `${map.mapName} — ${map.slots.length} スロット`;
+      ? `${map.mapName}：${map.slots.length} 本（${map.channelCount} 枠）`
+      : `${map.mapName}：${map.slots.length} 本`;
     setControlsEnabled(true);
     await refreshMapList();
   } catch (error) {
@@ -389,7 +389,7 @@ elements.mapOpen.addEventListener('click', async () => {
   try {
     const path = await open({
       multiple: false,
-      filters: [{ name: 'Kaotsuki マップ', extensions: ['json'] }],
+      filters: [{ name: 'Face Util マップ', extensions: ['json'] }],
     });
     if (path) {
       await loadMap(path);

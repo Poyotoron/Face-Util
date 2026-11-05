@@ -5,19 +5,19 @@ using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
 
-namespace Poyo.Kaotsuki.Editor
+namespace Poyo.FaceUtil.Editor
 {
-    internal static class KaotsukiAnimatorBuilder
+    internal static class FaceUtilAnimatorBuilder
     {
-        internal const string LayerControl = "Kaotsuki Control";
-        internal const string LayerReceive = "Kaotsuki Receive";
-        internal const string LayerDrive = "Kaotsuki Drive";
+        internal const string LayerControl = "Face Util Control";
+        internal const string LayerReceive = "Face Util Receive";
+        internal const string LayerDrive = "Face Util Drive";
 
         private static int DriveLayerIndex(int channelCount) => 1 + channelCount;
 
-        internal static AnimatorController Build(KaotsukiSlotTable table, bool overrideEyes)
+        internal static AnimatorController Build(FaceUtilSlotTable table, bool overrideEyes)
         {
-            var controller = new AnimatorController { name = "Kaotsuki" };
+            var controller = new AnimatorController { name = "Face Util" };
             AddParameters(controller, table);
             AddControlLayer(controller, table, overrideEyes);
             for (var channel = 1; channel <= table.ChannelCount; channel++)
@@ -29,17 +29,17 @@ namespace Poyo.Kaotsuki.Editor
             return controller;
         }
 
-        private static void AddParameters(AnimatorController controller, KaotsukiSlotTable table)
+        private static void AddParameters(AnimatorController controller, FaceUtilSlotTable table)
         {
             controller.AddParameter(new AnimatorControllerParameter
             {
-                name = KaotsukiInfo.ParamEnabled,
+                name = FaceUtilInfo.ParamEnabled,
                 type = AnimatorControllerParameterType.Bool,
                 defaultBool = false,
             });
             controller.AddParameter(new AnimatorControllerParameter
             {
-                name = KaotsukiInfo.ParamLipSync,
+                name = FaceUtilInfo.ParamLipSync,
                 type = AnimatorControllerParameterType.Bool,
                 defaultBool = false,
             });
@@ -47,13 +47,13 @@ namespace Poyo.Kaotsuki.Editor
             {
                 controller.AddParameter(new AnimatorControllerParameter
                 {
-                    name = KaotsukiInfo.IndexParam(channel),
+                    name = FaceUtilInfo.IndexParam(channel),
                     type = AnimatorControllerParameterType.Int,
                     defaultInt = 0,
                 });
                 controller.AddParameter(new AnimatorControllerParameter
                 {
-                    name = KaotsukiInfo.ValueParam(channel),
+                    name = FaceUtilInfo.ValueParam(channel),
                     type = AnimatorControllerParameterType.Int,
                     defaultInt = 0,
                 });
@@ -61,7 +61,7 @@ namespace Poyo.Kaotsuki.Editor
 
             controller.AddParameter(new AnimatorControllerParameter
             {
-                name = KaotsukiInfo.ParamOne,
+                name = FaceUtilInfo.ParamOne,
                 type = AnimatorControllerParameterType.Float,
                 defaultFloat = 1f,
             });
@@ -70,7 +70,7 @@ namespace Poyo.Kaotsuki.Editor
             {
                 controller.AddParameter(new AnimatorControllerParameter
                 {
-                    name = KaotsukiInfo.SlotParam(slot.Number),
+                    name = FaceUtilInfo.SlotParam(slot.Number),
                     type = AnimatorControllerParameterType.Float,
                     defaultFloat = slot.DefaultWeight / 100f,
                 });
@@ -79,7 +79,7 @@ namespace Poyo.Kaotsuki.Editor
 
         private static void AddControlLayer(
             AnimatorController controller,
-            KaotsukiSlotTable table,
+            FaceUtilSlotTable table,
             bool overrideEyes)
         {
             var machine = new AnimatorStateMachine { name = LayerControl };
@@ -95,13 +95,13 @@ namespace Poyo.Kaotsuki.Editor
             off.writeDefaultValues = true;
             machine.defaultState = init;
 
-            AddTransition(on, off, (AnimatorConditionMode.IfNot, KaotsukiInfo.ParamEnabled));
-            AddTransition(onLipSync, off, (AnimatorConditionMode.IfNot, KaotsukiInfo.ParamEnabled));
+            AddTransition(on, off, (AnimatorConditionMode.IfNot, FaceUtilInfo.ParamEnabled));
+            AddTransition(onLipSync, off, (AnimatorConditionMode.IfNot, FaceUtilInfo.ParamEnabled));
             // NOTE: Tracking Control はステートに入ったときに 1 度しか効かない。表情のレイヤーや VRChat が後から口のトラッキングを戻すと（アイテムやカメラを持ったときなど）、口パクが戻ってしまう。ON の間は毎フレーム入り直し、トラッキングとレイヤーの重みを設定し直す。
-            AddAnyStateTransition(machine, on, (AnimatorConditionMode.If, KaotsukiInfo.ParamEnabled),
-                (AnimatorConditionMode.IfNot, KaotsukiInfo.ParamLipSync));
-            AddAnyStateTransition(machine, onLipSync, (AnimatorConditionMode.If, KaotsukiInfo.ParamEnabled),
-                (AnimatorConditionMode.If, KaotsukiInfo.ParamLipSync));
+            AddAnyStateTransition(machine, on, (AnimatorConditionMode.If, FaceUtilInfo.ParamEnabled),
+                (AnimatorConditionMode.IfNot, FaceUtilInfo.ParamLipSync));
+            AddAnyStateTransition(machine, onLipSync, (AnimatorConditionMode.If, FaceUtilInfo.ParamEnabled),
+                (AnimatorConditionMode.If, FaceUtilInfo.ParamLipSync));
 
             var onBehaviours = new List<StateMachineBehaviour>
             {
@@ -127,13 +127,13 @@ namespace Poyo.Kaotsuki.Editor
             {
                 resetSynced.parameters.Add(new VRC_AvatarParameterDriver.Parameter
                 {
-                    name = KaotsukiInfo.IndexParam(channel),
+                    name = FaceUtilInfo.IndexParam(channel),
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
                     value = 0f,
                 });
                 resetSynced.parameters.Add(new VRC_AvatarParameterDriver.Parameter
                 {
-                    name = KaotsukiInfo.ValueParam(channel),
+                    name = FaceUtilInfo.ValueParam(channel),
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
                     value = 0f,
                 });
@@ -148,7 +148,7 @@ namespace Poyo.Kaotsuki.Editor
             {
                 resetSlots.parameters.Add(new VRC_AvatarParameterDriver.Parameter
                 {
-                    name = KaotsukiInfo.SlotParam(slot.Number),
+                    name = FaceUtilInfo.SlotParam(slot.Number),
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
                     value = slot.DefaultWeight / 100f,
                 });
@@ -166,7 +166,7 @@ namespace Poyo.Kaotsuki.Editor
             });
         }
 
-        private static void AddReceiveLayer(AnimatorController controller, KaotsukiSlotTable table, int channel)
+        private static void AddReceiveLayer(AnimatorController controller, FaceUtilSlotTable table, int channel)
         {
             var layerName = channel == 1 ? LayerReceive : LayerReceive + " " + channel;
             var machine = new AnimatorStateMachine { name = layerName };
@@ -193,11 +193,11 @@ namespace Poyo.Kaotsuki.Editor
                     new VRC_AvatarParameterDriver.Parameter
                     {
                         type = VRC_AvatarParameterDriver.ChangeType.Copy,
-                        source = KaotsukiInfo.ValueParam(channel),
-                        name = KaotsukiInfo.SlotParam(slot.Number),
+                        source = FaceUtilInfo.ValueParam(channel),
+                        name = FaceUtilInfo.SlotParam(slot.Number),
                         convertRange = true,
                         sourceMin = 0f,
-                        sourceMax = KaotsukiInfo.ValueMax,
+                        sourceMax = FaceUtilInfo.ValueMax,
                         destMin = 0f,
                         destMax = 1f,
                     },
@@ -205,8 +205,8 @@ namespace Poyo.Kaotsuki.Editor
                 state.behaviours = new StateMachineBehaviour[] { driver };
 
                 var transition = machine.AddAnyStateTransition(state);
-                transition.AddCondition(AnimatorConditionMode.If, 0f, KaotsukiInfo.ParamEnabled);
-                transition.AddCondition(AnimatorConditionMode.Equals, slot.Index, KaotsukiInfo.IndexParam(channel));
+                transition.AddCondition(AnimatorConditionMode.If, 0f, FaceUtilInfo.ParamEnabled);
+                transition.AddCondition(AnimatorConditionMode.Equals, slot.Index, FaceUtilInfo.IndexParam(channel));
                 // NOTE: 同じ Index のまま Value だけ変わった場合にも Driver を毎フレーム実行し直す。
                 transition.canTransitionToSelf = true;
                 transition.hasExitTime = false;
@@ -223,7 +223,7 @@ namespace Poyo.Kaotsuki.Editor
             });
         }
 
-        private static void AddDriveLayer(AnimatorController controller, KaotsukiSlotTable table)
+        private static void AddDriveLayer(AnimatorController controller, FaceUtilSlotTable table)
         {
             var machine = new AnimatorStateMachine { name = LayerDrive };
             var state = machine.AddState("Drive", new Vector3(0, 0));
@@ -244,7 +244,7 @@ namespace Poyo.Kaotsuki.Editor
                 {
                     name = name,
                     blendType = BlendTreeType.Simple1D,
-                    blendParameter = KaotsukiInfo.SlotParam(slot.Number),
+                    blendParameter = FaceUtilInfo.SlotParam(slot.Number),
                     useAutomaticThresholds = false,
                 };
                 slotTree.children = new[]
@@ -255,7 +255,7 @@ namespace Poyo.Kaotsuki.Editor
                 directChildren[i] = new ChildMotion
                 {
                     motion = slotTree,
-                    directBlendParameter = KaotsukiInfo.ParamOne,
+                    directBlendParameter = FaceUtilInfo.ParamOne,
                     timeScale = 1f,
                 };
             }
@@ -272,7 +272,7 @@ namespace Poyo.Kaotsuki.Editor
             });
         }
 
-        private static AnimationClip CreateClip(KaotsukiSlot slot, string name, float weight)
+        private static AnimationClip CreateClip(FaceUtilSlot slot, string name, float weight)
         {
             var clip = new AnimationClip { name = name };
             var binding = EditorCurveBinding.FloatCurve(

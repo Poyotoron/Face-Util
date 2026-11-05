@@ -1,6 +1,6 @@
 [package]
-name = "kaotsuki-sender"
-version = "0.3.0"
+name = "face-util-sender"
+version = "0.4.0"
 edition = "2021"
 license = "MIT"
 publish = false

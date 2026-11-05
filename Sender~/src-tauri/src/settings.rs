@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::net::{SocketAddr, ToSocketAddrs};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tauri::{AppHandle, Manager};
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -35,10 +35,12 @@ impl Settings {
         let Ok(path) = settings_path(app) else {
             return Self::default();
         };
-        let Ok(content) = fs::read_to_string(path) else {
-            return Self::default();
-        };
-        serde_json::from_str(&content).unwrap_or_default()
+        // アプリの識別子が変わっても、以前の版の送信先とポートを使えるようにする。
+        let legacy = path.parent().and_then(Path::parent).map(|base| {
+            base.join("net.maaaaa.kaotsuki.sender")
+                .join("settings.json")
+        });
+        load_from_paths(&path, legacy.as_deref())
     }
 
     pub fn save(&self, app: &AppHandle) -> Result<(), String> {
@@ -64,10 +66,22 @@ impl Settings {
 
         (self.host.as_str(), self.port)
             .to_socket_addrs()
-            .map_err(|_| format!("送信先を解決できません: {}", self.host))?
+            .map_err(|_| format!("送信先のアドレスを取得できません: {}", self.host))?
             .find(SocketAddr::is_ipv4)
-            .ok_or_else(|| format!("送信先を解決できません: {}", self.host))
+            .ok_or_else(|| format!("送信先のアドレスを取得できません: {}", self.host))
     }
+}
+
+fn load_from_paths(path: &Path, legacy: Option<&Path>) -> Settings {
+    let selected = if !path.exists() {
+        legacy.unwrap_or(path)
+    } else {
+        path
+    };
+    fs::read_to_string(selected)
+        .ok()
+        .and_then(|content| serde_json::from_str(&content).ok())
+        .unwrap_or_default()
 }
 
 fn settings_path(app: &AppHandle) -> Result<PathBuf, String> {
@@ -80,6 +94,21 @@ fn settings_path(app: &AppHandle) -> Result<PathBuf, String> {
 #[cfg(test)]
 mod tests {
     use super::Settings;
+
+    #[test]
+    fn old_settings_are_fallback_and_new_settings_take_priority() {
+        let folder =
+            std::env::temp_dir().join(format!("face-util-settings-{}", std::process::id()));
+        std::fs::create_dir_all(&folder).expect("create fixture");
+        let new = folder.join("new.json");
+        let old = folder.join("old.json");
+        let _ = std::fs::remove_file(&new);
+        std::fs::write(&old, r#"{"port":9100}"#).expect("write legacy settings");
+        assert_eq!(super::load_from_paths(&new, Some(&old)).port, 9100);
+        std::fs::write(&new, r#"{"port":9200}"#).expect("write new settings");
+        assert_eq!(super::load_from_paths(&new, Some(&old)).port, 9200);
+        std::fs::remove_dir_all(folder).expect("remove fixture");
+    }
 
     #[test]
     fn legacy_settings_keep_existing_values() {

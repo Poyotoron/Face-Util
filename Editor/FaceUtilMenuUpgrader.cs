@@ -3,13 +3,13 @@ using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.ScriptableObjects;
 
-namespace Poyo.Kaotsuki.Editor
+namespace Poyo.FaceUtil.Editor
 {
-    internal static class KaotsukiMenuUpgrader
+    internal static class FaceUtilMenuUpgrader
     {
         internal const string OnObjectName = "ON";
         internal const string LipSyncObjectName = "口パク";
-        private const string UndoName = "Kaotsuki メニュー";
+        private const string UndoName = "Poyo's Face Util メニュー";
 
         internal static void BuildSubMenu(ModularAvatarMenuItem item, string undoName)
         {
@@ -20,14 +20,14 @@ namespace Poyo.Kaotsuki.Editor
 
             if (string.IsNullOrEmpty(item.Control.name))
             {
-                item.Control.name = "Kaotsuki";
+                item.Control.name = "Face Util";
             }
 
             item.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
             item.Control.parameter = new VRCExpressionsMenu.Control.Parameter { name = string.Empty };
             item.MenuSource = SubmenuSource.Children;
-            AddToggle(item.transform, OnObjectName, KaotsukiInfo.ParamEnabled, undoName);
-            AddToggle(item.transform, LipSyncObjectName, KaotsukiInfo.ParamLipSync, undoName);
+            AddToggle(item.transform, OnObjectName, FaceUtilInfo.ParamEnabled, undoName);
+            AddToggle(item.transform, LipSyncObjectName, FaceUtilInfo.ParamLipSync, undoName);
         }
 
         private static void AddToggle(Transform parent, string name, string parameter, string undoName)
@@ -48,15 +48,15 @@ namespace Poyo.Kaotsuki.Editor
             Undo.RegisterCreatedObjectUndo(child, undoName);
         }
 
-        internal static bool NeedsUpgrade(KaotsukiReceiver receiver)
+        internal static bool NeedsUpgrade(FaceUtilReceiver receiver)
         {
             var item = receiver == null ? null : receiver.GetComponent<ModularAvatarMenuItem>();
             return item != null && item.Control != null &&
                    item.Control.type == VRCExpressionsMenu.Control.ControlType.Toggle &&
-                   item.Control.parameter != null && item.Control.parameter.name == KaotsukiInfo.ParamEnabled;
+                   item.Control.parameter != null && item.Control.parameter.name == FaceUtilInfo.ParamEnabled;
         }
 
-        internal static void Upgrade(KaotsukiReceiver receiver)
+        internal static void Upgrade(FaceUtilReceiver receiver)
         {
             if (!NeedsUpgrade(receiver))
             {

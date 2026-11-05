@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Poyo.Kaotsuki
+namespace Poyo.FaceUtil
 {
     /// <summary>操作対象として登録したメッシュ 1 件分の設定。</summary>
     [Serializable]
-    public sealed class KaotsukiMeshEntry
+    public sealed class FaceUtilMeshEntry
     {
         public SkinnedMeshRenderer renderer;
 

@@ -6,19 +6,19 @@ using UnityEditor;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-namespace Poyo.Kaotsuki.Editor
+namespace Poyo.FaceUtil.Editor
 {
-    internal static class KaotsukiSenderLauncher
+    internal static class FaceUtilSenderLauncher
     {
         /// <summary>パッケージ内の送り手 exe の絶対パス。パッケージが見つからなければ null。</summary>
         internal static string SenderExePath
         {
             get
             {
-                var info = UnityEditor.PackageManager.PackageInfo.FindForAssembly(typeof(KaotsukiSenderLauncher).Assembly);
+                var info = UnityEditor.PackageManager.PackageInfo.FindForAssembly(typeof(FaceUtilSenderLauncher).Assembly);
                 return info == null
                     ? null
-                    : Path.GetFullPath(Path.Combine(info.resolvedPath, KaotsukiInfo.SenderExeRelativePath));
+                    : Path.GetFullPath(Path.Combine(info.resolvedPath, FaceUtilInfo.SenderExeRelativePath));
             }
         }
 
@@ -34,7 +34,7 @@ namespace Poyo.Kaotsuki.Editor
             if (exe == null || !File.Exists(exe))
             {
                 EditorUtility.DisplayDialog(
-                    "Kaotsuki",
+                    FaceUtilInfo.DisplayName,
                     "送り手アプリが見つかりません。\n" + (exe ?? "(パッケージが見つかりません)"),
                     "OK");
                 return false;
@@ -53,7 +53,7 @@ namespace Poyo.Kaotsuki.Editor
             }
             catch (Exception e) when (e is Win32Exception || e is InvalidOperationException || e is IOException)
             {
-                Debug.LogError("[Kaotsuki] 送り手を起動できませんでした: " + e.Message);
+                Debug.LogError("[Poyo's Face Util] 送り手を起動できませんでした: " + e.Message);
                 return false;
             }
         }
@@ -63,29 +63,29 @@ namespace Poyo.Kaotsuki.Editor
         {
             try
             {
-                Directory.CreateDirectory(KaotsukiMapWriter.MapFolder);
+                Directory.CreateDirectory(FaceUtilMapWriter.MapFolder);
                 Process.Start(new ProcessStartInfo
                 {
-                    FileName = KaotsukiMapWriter.MapFolder,
+                    FileName = FaceUtilMapWriter.MapFolder,
                     UseShellExecute = true,
                 });
             }
             catch (Exception e) when (e is Win32Exception || e is InvalidOperationException || e is IOException || e is UnauthorizedAccessException)
             {
-                Debug.LogError("[Kaotsuki] マップのフォルダを開けませんでした: " + e.Message);
+                Debug.LogError("[Poyo's Face Util] マップのフォルダを開けませんでした: " + e.Message);
             }
         }
 
-        [MenuItem(KaotsukiInfo.OpenSenderMenuPath, false, 1000)]
+        [MenuItem(FaceUtilInfo.OpenSenderMenuPath, false, 1000)]
         private static void OpenSenderMenu() => Launch(null);
 
-        [MenuItem(KaotsukiInfo.OpenSenderMenuPath, true)]
+        [MenuItem(FaceUtilInfo.OpenSenderMenuPath, true)]
         private static bool ValidateOpenSender() => IsWindows;
 
-        [MenuItem(KaotsukiInfo.OpenMapFolderMenuPath, false, 1001)]
+        [MenuItem(FaceUtilInfo.OpenMapFolderMenuPath, false, 1001)]
         private static void OpenMapFolderMenu() => OpenMapFolder();
 
-        [MenuItem(KaotsukiInfo.OpenMapFolderMenuPath, true)]
+        [MenuItem(FaceUtilInfo.OpenMapFolderMenuPath, true)]
         private static bool ValidateOpenMapFolder() => IsWindows;
 
         private static bool IsWindows => Application.platform == RuntimePlatform.WindowsEditor;

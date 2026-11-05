@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Kaotsuki Sender",
-  "version": "0.3.0",
-  "identifier": "net.maaaaa.kaotsuki.sender",
+  "productName": "Poyo's Face Util Sender",
+  "version": "0.4.0",
+  "identifier": "net.maaaaa.face-util.sender",
   "build": {
     "frontendDist": "../ui"
   },
@@ -11,7 +11,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Kaotsuki Sender",
+        "title": "Poyo's Face Util Sender",
         "width": 520,
         "height": 760,
         "minWidth": 420,

@@ -46,7 +46,7 @@ impl Receiver {
         let stop = Arc::new(AtomicBool::new(false));
         let thread_stop = Arc::clone(&stop);
         let thread = std::thread::Builder::new()
-            .name("kaotsuki-receiver".to_string())
+            .name("face-util-receiver".to_string())
             .spawn(move || {
                 let mut buffer = [0u8; 65535];
                 while !thread_stop.load(Ordering::Relaxed) {
@@ -178,7 +178,7 @@ mod tests {
                 OscPacket::Bundle(OscBundle {
                     timetag: (0, 1).into(),
                     content: vec![message(
-                        "/avatar/parameters/Kaotsuki/Enabled",
+                        "/avatar/parameters/FaceUtil/Enabled",
                         OscType::Bool(true),
                     )],
                 }),
@@ -192,7 +192,7 @@ mod tests {
             vec![
                 Incoming::AvatarChange("avtr_a".to_string()),
                 Incoming::Bool {
-                    address: "/avatar/parameters/Kaotsuki/Enabled".to_string(),
+                    address: "/avatar/parameters/FaceUtil/Enabled".to_string(),
                     value: true
                 }
             ]

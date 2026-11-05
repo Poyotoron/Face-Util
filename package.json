@@ -1,7 +1,7 @@
 {
-  "name": "net.maaaaa.kaotsuki",
-  "displayName": "Kaotsuki",
-  "version": "0.3.0",
+  "name": "net.maaaaa.face-util",
+  "displayName": "Poyo's Face Util",
+  "version": "0.4.0",
   "description": "OSC からアバターの表情（ブレンドシェイプ）を操作するためのツールです。",
   "unity": "2022.3",
   "license": "MIT",
@@ -9,12 +9,15 @@
     "name": "Poyotoron",
     "url": "https://github.com/Poyotoron"
   },
-  "url": "https://github.com/Poyotoron/Kaotsuki/releases/download/0.3.0/net.maaaaa.kaotsuki-0.3.0.zip",
-  "documentationUrl": "https://ghp.maaaaa.net/Kaotsuki/",
-  "changelogUrl": "https://github.com/Poyotoron/Kaotsuki/blob/main/CHANGELOG.md",
+  "url": "https://github.com/Poyotoron/Face-Util/releases/download/0.4.0/net.maaaaa.face-util-0.4.0.zip",
+  "documentationUrl": "https://ghp.maaaaa.net/Face-Util/",
+  "changelogUrl": "https://github.com/Poyotoron/Face-Util/blob/main/CHANGELOG.md",
   "vpmDependencies": {
     "com.vrchat.avatars": ">=3.7.0",
     "nadena.dev.modular-avatar": ">=1.17.0 <2.0.0",
     "nadena.dev.ndmf": ">=1.14.0 <2.0.0"
-  }
+  },
+  "legacyPackages": [
+    "net.maaaaa.kaotsuki"
+  ]
 }

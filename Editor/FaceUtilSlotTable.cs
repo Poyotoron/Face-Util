@@ -3,9 +3,9 @@ using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 
-namespace Poyo.Kaotsuki.Editor
+namespace Poyo.FaceUtil.Editor
 {
-    internal sealed class KaotsukiSlot
+    internal sealed class FaceUtilSlot
     {
         internal int Number;
         internal int Channel;
@@ -13,39 +13,39 @@ namespace Poyo.Kaotsuki.Editor
         internal SkinnedMeshRenderer Renderer;
         internal string Path;
         internal string BlendShape;
-        internal KaotsukiTrackingKind Tracking;
+        internal FaceUtilTrackingKind Tracking;
         internal string AnimatedBlendShape;
         internal float DefaultWeight;
         internal string Group;
     }
 
-    internal sealed class KaotsukiSlotTable
+    internal sealed class FaceUtilSlotTable
     {
-        internal IReadOnlyList<KaotsukiSlot> Slots { get; }
+        internal IReadOnlyList<FaceUtilSlot> Slots { get; }
         internal int ChannelCount =>
-            (_slots.Count + KaotsukiInfo.SlotsPerChannel - 1) / KaotsukiInfo.SlotsPerChannel;
+            (_slots.Count + FaceUtilInfo.SlotsPerChannel - 1) / FaceUtilInfo.SlotsPerChannel;
         internal int RegisteredCount { get; private set; }
         internal int TruncatedCount { get; private set; }
         internal IReadOnlyList<string> SkippedReasons { get; }
 
-        private readonly List<KaotsukiSlot> _slots = new List<KaotsukiSlot>();
+        private readonly List<FaceUtilSlot> _slots = new List<FaceUtilSlot>();
         private readonly List<string> _skippedReasons = new List<string>();
 
-        private KaotsukiSlotTable()
+        private FaceUtilSlotTable()
         {
             Slots = _slots;
             SkippedReasons = _skippedReasons;
         }
 
-        internal static KaotsukiSlotTable Build(KaotsukiReceiver receiver, Transform avatarRoot)
+        internal static FaceUtilSlotTable Build(FaceUtilReceiver receiver, Transform avatarRoot)
         {
-            var table = new KaotsukiSlotTable();
+            var table = new FaceUtilSlotTable();
             if (receiver == null || avatarRoot == null || receiver.meshes == null)
             {
                 return table;
             }
 
-            var tracking = KaotsukiTrackingShapes.Resolve(avatarRoot);
+            var tracking = FaceUtilTrackingShapes.Resolve(avatarRoot);
             var acceptedRenderers = new HashSet<SkinnedMeshRenderer>();
             for (var i = 0; i < receiver.meshes.Count; i++)
             {
@@ -80,9 +80,9 @@ namespace Poyo.Kaotsuki.Editor
                     ? new HashSet<string>()
                     : new HashSet<string>(entry.excludedBlendShapes);
                 var path = AnimationUtility.CalculateTransformPath(renderer.transform, avatarRoot);
-                var auto = KaotsukiSeparators.ResolveAuto(mesh);
-                var separators = KaotsukiSeparators.Resolve(mesh, entry, auto);
-                var frozen = KaotsukiFrozenShapes.Resolve(renderer);
+                var auto = FaceUtilSeparators.ResolveAuto(mesh);
+                var separators = FaceUtilSeparators.Resolve(mesh, entry, auto);
+                var frozen = FaceUtilFrozenShapes.Resolve(renderer);
                 var group = string.Empty;
 
                 for (var blendShapeIndex = 0; blendShapeIndex < mesh.blendShapeCount; blendShapeIndex++)
@@ -91,7 +91,7 @@ namespace Poyo.Kaotsuki.Editor
                     // NOTE: 区切りは中身の無いダミーなので操作対象にしない。除外されていても、グループ分けには使う。
                     if (separators[blendShapeIndex])
                     {
-                        group = KaotsukiSeparators.GroupName(blendShape, auto[blendShapeIndex]);
+                        group = FaceUtilSeparators.GroupName(blendShape, auto[blendShapeIndex]);
                         continue;
                     }
 
@@ -107,7 +107,7 @@ namespace Poyo.Kaotsuki.Editor
                     }
 
                     table.RegisteredCount++;
-                    if (table._slots.Count >= KaotsukiInfo.MaxSlots)
+                    if (table._slots.Count >= FaceUtilInfo.MaxSlots)
                     {
                         table.TruncatedCount++;
                         continue;
@@ -115,18 +115,18 @@ namespace Poyo.Kaotsuki.Editor
 
                     var kind = tracking.KindOf(renderer, blendShape);
                     var number = table._slots.Count + 1;
-                    table._slots.Add(new KaotsukiSlot
+                    table._slots.Add(new FaceUtilSlot
                     {
                         Number = number,
-                        Channel = (number - 1) / KaotsukiInfo.SlotsPerChannel + 1,
-                        Index = (number - 1) % KaotsukiInfo.SlotsPerChannel + 1,
+                        Channel = (number - 1) / FaceUtilInfo.SlotsPerChannel + 1,
+                        Index = (number - 1) % FaceUtilInfo.SlotsPerChannel + 1,
                         Renderer = renderer,
                         Path = path,
                         BlendShape = blendShape,
                         Tracking = kind,
                         AnimatedBlendShape = blendShape,
                         // NOTE: 口パク・まばたきは複製を動かすので、複製の既定値 0 を既定値にする。元の値はメッシュに残るので見た目は変わらない。
-                        DefaultWeight = kind != KaotsukiTrackingKind.None
+                        DefaultWeight = kind != FaceUtilTrackingKind.None
                             ? 0f
                             : Mathf.Clamp(renderer.GetBlendShapeWeight(blendShapeIndex), 0f, 100f),
                         Group = group,

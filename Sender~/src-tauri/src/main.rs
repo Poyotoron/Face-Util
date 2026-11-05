@@ -69,5 +69,5 @@ fn main() {
             commands::reset,
         ])
         .run(tauri::generate_context!())
-        .expect("Kaotsuki Sender の起動に失敗しました");
+        .expect("Poyo's Face Util Sender の起動に失敗しました");
 }

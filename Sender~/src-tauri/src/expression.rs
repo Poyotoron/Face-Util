@@ -4,6 +4,9 @@ use std::collections::HashSet;
 use std::fs;
 use std::path::Path;
 
+pub const FORMAT: &str = "face-util-expression";
+pub const LEGACY_FORMAT: &str = "kaotsuki-expression";
+
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SlotValue {
@@ -60,7 +63,7 @@ pub fn save(
         .collect();
     let count = blend_shapes.len();
     let file = ExpressionFile {
-        format: "kaotsuki-expression",
+        format: FORMAT,
         version: 1,
         map_name: &map.map_name,
         saved_at,
@@ -85,7 +88,8 @@ pub fn load(path: &Path) -> Result<Vec<Entry>, String> {
     let content = fs::read_to_string(path).map_err(|_| unsupported())?;
     let content = content.strip_prefix('\u{feff}').unwrap_or(&content);
     let value: serde_json::Value = serde_json::from_str(content).map_err(|_| unsupported())?;
-    if value["format"].as_str() != Some("kaotsuki-expression")
+    // 以前の名前の版で保存した表情も読み込めるようにする。
+    if !matches!(value["format"].as_str(), Some(FORMAT | LEGACY_FORMAT))
         || value["version"].as_u64() != Some(1)
     {
         return Err(unsupported());
@@ -157,7 +161,7 @@ mod tests {
 
     fn with_file(test: impl FnOnce(&std::path::Path)) {
         let path = std::env::temp_dir().join(format!(
-            "kaotsuki-expression-test-{}-{}.json",
+            "face-util-expression-test-{}-{}.json",
             std::process::id(),
             NEXT_FILE_ID.fetch_add(1, Ordering::Relaxed)
         ));
@@ -254,7 +258,7 @@ mod tests {
     #[test]
     fn invalid_entries_are_ignored() {
         with_file(|path| {
-            fs::write(path, r#"{"format":"kaotsuki-expression","version":1,"blendShapes":[
+            fs::write(path, r#"{"format":"face-util-expression","version":1,"blendShapes":[
                 {"mesh":"Body","blendShape":"a","weight":120}, {"mesh":"Body","blendShape":"b","weight":"x"},
                 {"mesh":1,"blendShape":"c","weight":10}, {"mesh":"Body","blendShape":"d","weight":20}] }"#).expect("write expression");
             let entries = load(path).expect("load expression");
@@ -268,13 +272,27 @@ mod tests {
         with_file(|path| {
             fs::write(
                 path,
-                r#"{"format":"kaotsuki-map","version":1,"blendShapes":[]}"#,
+                r#"{"format":"face-util-map","version":1,"blendShapes":[]}"#,
             )
             .expect("write expression");
             assert_eq!(
                 load(path).err().as_deref(),
                 Some("対応していないファイルです")
             );
+        });
+    }
+
+    #[test]
+    fn current_and_legacy_formats_are_accepted() {
+        with_file(|path| {
+            for format in [super::FORMAT, super::LEGACY_FORMAT] {
+                fs::write(
+                    path,
+                    format!(r#"{{"format":"{format}","version":1,"blendShapes":[]}}"#),
+                )
+                .expect("write expression");
+                assert!(load(path).expect("load supported expression").is_empty());
+            }
         });
     }
 
@@ -299,13 +317,13 @@ mod tests {
         with_file(|path| {
             fs::write(
                 path,
-                "\u{feff}{\"format\":\"kaotsuki-expression\",\"version\":1,\"blendShapes\":[]}",
+                "\u{feff}{\"format\":\"face-util-expression\",\"version\":1,\"blendShapes\":[]}",
             )
             .expect("write expression");
             assert!(load(path).expect("load BOM").is_empty());
             fs::write(
                 path,
-                r#"{"format":"kaotsuki-expression","version":1,"blendShapes":{}}"#,
+                r#"{"format":"face-util-expression","version":1,"blendShapes":{}}"#,
             )
             .expect("write expression");
             assert_eq!(

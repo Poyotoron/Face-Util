@@ -3,9 +3,9 @@ using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using Object = UnityEngine.Object;
 
-namespace Poyo.Kaotsuki.Editor
+namespace Poyo.FaceUtil.Editor
 {
-    internal enum KaotsukiTrackingKind
+    internal enum FaceUtilTrackingKind
     {
         None,
         LipSync,
@@ -13,16 +13,16 @@ namespace Poyo.Kaotsuki.Editor
     }
 
     /// <summary>VRChat が動かす口パク・まばたきのブレンドシェイプ。</summary>
-    internal sealed class KaotsukiTrackingShapes
+    internal sealed class FaceUtilTrackingShapes
     {
-        internal const string CopyPrefix = "Kaotsuki/";
+        internal const string CopyPrefix = "FaceUtil/";
 
-        private readonly Dictionary<SkinnedMeshRenderer, Dictionary<string, KaotsukiTrackingKind>> _shapes =
-            new Dictionary<SkinnedMeshRenderer, Dictionary<string, KaotsukiTrackingKind>>();
+        private readonly Dictionary<SkinnedMeshRenderer, Dictionary<string, FaceUtilTrackingKind>> _shapes =
+            new Dictionary<SkinnedMeshRenderer, Dictionary<string, FaceUtilTrackingKind>>();
 
-        internal static KaotsukiTrackingShapes Resolve(Transform avatarRoot)
+        internal static FaceUtilTrackingShapes Resolve(Transform avatarRoot)
         {
-            var result = new KaotsukiTrackingShapes();
+            var result = new FaceUtilTrackingShapes();
             var descriptor = avatarRoot == null ? null : avatarRoot.GetComponent<VRCAvatarDescriptor>();
             if (descriptor == null)
             {
@@ -35,12 +35,12 @@ namespace Poyo.Kaotsuki.Editor
             {
                 foreach (var name in descriptor.VisemeBlendShapes)
                 {
-                    result.Add(visemeMesh, name, KaotsukiTrackingKind.LipSync);
+                    result.Add(visemeMesh, name, FaceUtilTrackingKind.LipSync);
                 }
             }
             else if (descriptor.lipSync == VRC.SDKBase.VRC_AvatarDescriptor.LipSyncStyle.JawFlapBlendShape)
             {
-                result.Add(visemeMesh, descriptor.MouthOpenBlendShapeName, KaotsukiTrackingKind.LipSync);
+                result.Add(visemeMesh, descriptor.MouthOpenBlendShapeName, FaceUtilTrackingKind.LipSync);
             }
 
             var eyes = descriptor.customEyeLookSettings;
@@ -54,7 +54,7 @@ namespace Poyo.Kaotsuki.Editor
                 {
                     if (index >= 0 && index < mesh.blendShapeCount)
                     {
-                        result.Add(eyes.eyelidsSkinnedMesh, mesh.GetBlendShapeName(index), KaotsukiTrackingKind.Eyelid);
+                        result.Add(eyes.eyelidsSkinnedMesh, mesh.GetBlendShapeName(index), FaceUtilTrackingKind.Eyelid);
                     }
                 }
             }
@@ -62,7 +62,7 @@ namespace Poyo.Kaotsuki.Editor
             return result;
         }
 
-        private void Add(SkinnedMeshRenderer renderer, string name, KaotsukiTrackingKind kind)
+        private void Add(SkinnedMeshRenderer renderer, string name, FaceUtilTrackingKind kind)
         {
             if (renderer == null || renderer.sharedMesh == null || string.IsNullOrEmpty(name))
             {
@@ -71,7 +71,7 @@ namespace Poyo.Kaotsuki.Editor
 
             if (!_shapes.TryGetValue(renderer, out var names))
             {
-                names = new Dictionary<string, KaotsukiTrackingKind>();
+                names = new Dictionary<string, FaceUtilTrackingKind>();
                 _shapes.Add(renderer, names);
             }
 
@@ -82,32 +82,32 @@ namespace Poyo.Kaotsuki.Editor
             }
         }
 
-        internal KaotsukiTrackingKind KindOf(SkinnedMeshRenderer renderer, string blendShape)
+        internal FaceUtilTrackingKind KindOf(SkinnedMeshRenderer renderer, string blendShape)
         {
             return renderer != null && blendShape != null && _shapes.TryGetValue(renderer, out var names) &&
                    names.TryGetValue(blendShape, out var kind)
                 ? kind
-                : KaotsukiTrackingKind.None;
+                : FaceUtilTrackingKind.None;
         }
 
         /// <summary>ビルド中のメッシュへ口パク・まばたきの複製を足す。</summary>
-        internal static void CreateCopies(KaotsukiSlotTable table)
+        internal static void CreateCopies(FaceUtilSlotTable table)
         {
             // NOTE: FX のクリップで動かすブレンドシェイプは、レイヤーの重みが 0 でも Animator が毎フレーム書き込む。
-            //       口パク・まばたきのブレンドシェイプをそのまま動かすと、Kaotsuki が OFF の間も VRChat の口パク・まばたきが止まるので、
+            //       口パク・まばたきのブレンドシェイプをそのまま動かすと、Face Util が OFF の間も VRChat の口パク・まばたきが止まるので、
             //       複製を作ってそちらだけを動かす。元のメッシュアセットは変更しない。
             var renderers = new List<SkinnedMeshRenderer>();
-            var slotsByRenderer = new Dictionary<SkinnedMeshRenderer, List<KaotsukiSlot>>();
+            var slotsByRenderer = new Dictionary<SkinnedMeshRenderer, List<FaceUtilSlot>>();
             foreach (var slot in table.Slots)
             {
-                if (slot.Tracking == KaotsukiTrackingKind.None)
+                if (slot.Tracking == FaceUtilTrackingKind.None)
                 {
                     continue;
                 }
 
                 if (!slotsByRenderer.TryGetValue(slot.Renderer, out var slots))
                 {
-                    slots = new List<KaotsukiSlot>();
+                    slots = new List<FaceUtilSlot>();
                     slotsByRenderer.Add(slot.Renderer, slots);
                     renderers.Add(slot.Renderer);
                 }
@@ -125,7 +125,7 @@ namespace Poyo.Kaotsuki.Editor
                 }
 
                 var copy = Object.Instantiate(original);
-                copy.name = original.name + " (Kaotsuki)";
+                copy.name = original.name + " (Face Util)";
                 var dv = new Vector3[original.vertexCount];
                 var dn = new Vector3[original.vertexCount];
                 var dt = new Vector3[original.vertexCount];

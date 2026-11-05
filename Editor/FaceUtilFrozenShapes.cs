@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Poyo.Kaotsuki.Editor
+namespace Poyo.FaceUtil.Editor
 {
     /// <summary>AAO Avatar Optimizer の Freeze BlendShapes で固定されるブレンドシェイプ。</summary>
-    internal static class KaotsukiFrozenShapes
+    internal static class FaceUtilFrozenShapes
     {
         // NOTE: AAO Avatar Optimizer は任意の連携先で、参照を持たない。コンポーネントの型が internal で直接使えないため、
         //       型名で探し、シリアライズされた固定対象の一覧を AAO と同じ順（元の一覧 → Prefab の各段 → シーン上の変更）で組み立てる。

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Poyo.Kaotsuki.Editor
+namespace Poyo.FaceUtil.Editor
 {
-    [CustomEditor(typeof(KaotsukiReceiver))]
-    internal sealed class KaotsukiReceiverEditor : UnityEditor.Editor
+    [CustomEditor(typeof(FaceUtilReceiver))]
+    internal sealed class FaceUtilReceiverEditor : UnityEditor.Editor
     {
         private enum ChangeKind
         {
@@ -47,7 +47,7 @@ namespace Poyo.Kaotsuki.Editor
             internal bool[] Visible = Array.Empty<bool>();
             internal Vector2 Scroll;
             internal bool[] Separator = Array.Empty<bool>();
-            internal KaotsukiSeparatorRule[] Auto = Array.Empty<KaotsukiSeparatorRule>();
+            internal FaceUtilSeparatorRule[] Auto = Array.Empty<FaceUtilSeparatorRule>();
             internal GUIContent[] EditLabels = Array.Empty<GUIContent>();
             internal int[] Ungrouped = Array.Empty<int>();
             internal GroupView[] Groups = Array.Empty<GroupView>();
@@ -74,7 +74,7 @@ namespace Poyo.Kaotsuki.Editor
         private static readonly GUILayoutOption[] GroupButtonOptions = { GUILayout.Width(40f) };
         private static readonly GUIContent OptionsHeading = new GUIContent("オプション");
         private static readonly GUIContent MeshesHeading = new GUIContent("メッシュ");
-        private static readonly GUIContent OverrideEyesLabel = new GUIContent("ON の間まばたき・視線を止める");
+        private static readonly GUIContent OverrideEyesLabel = new GUIContent("ON の間、まばたき・視線を止める");
         private static readonly GUIContent UpgradeMenuLabel = new GUIContent("メニューに口パクを追加");
         private const string UpgradeMenuHelp = "Expression Menu に口パクの切り替えがありません。";
         private static readonly GUIContent AllOnLabel = new GUIContent("すべて ON");
@@ -91,7 +91,7 @@ namespace Poyo.Kaotsuki.Editor
         private static readonly GUILayoutOption[] ScrollOptions = { GUILayout.MaxHeight(360f) };
 
         private readonly List<MeshView> _views = new List<MeshView>();
-        private KaotsukiSlotTable _table;
+        private FaceUtilSlotTable _table;
         private GUIContent _countLabel = Empty;
         private string _channelMessage;
         private string _truncatedMessage;
@@ -123,7 +123,7 @@ namespace Poyo.Kaotsuki.Editor
                 RebuildCache();
             }
 
-            var receiver = (KaotsukiReceiver)target;
+            var receiver = (FaceUtilReceiver)target;
             if (CacheNeedsRebuild(receiver))
             {
                 RebuildCache();
@@ -157,7 +157,7 @@ namespace Poyo.Kaotsuki.Editor
                 EditorGUILayout.HelpBox(UpgradeMenuHelp, MessageType.Info);
                 if (GUILayout.Button(UpgradeMenuLabel))
                 {
-                    KaotsukiMenuUpgrader.Upgrade(receiver);
+                    FaceUtilMenuUpgrader.Upgrade(receiver);
                     RebuildCache();
                     GUIUtility.ExitGUI();
                 }
@@ -410,7 +410,7 @@ namespace Poyo.Kaotsuki.Editor
             }
         }
 
-        private bool CacheNeedsRebuild(KaotsukiReceiver receiver)
+        private bool CacheNeedsRebuild(FaceUtilReceiver receiver)
         {
             var count = receiver.meshes == null ? 0 : receiver.meshes.Count;
             if (_views.Count != count)
@@ -434,7 +434,7 @@ namespace Poyo.Kaotsuki.Editor
         }
 
         private void ApplyChange(
-            KaotsukiReceiver receiver,
+            FaceUtilReceiver receiver,
             ChangeKind kind,
             int meshIndex,
             int blendShapeIndex,
@@ -452,18 +452,18 @@ namespace Poyo.Kaotsuki.Editor
             {
                 if (_avatarRoot == null || !renderer.transform.IsChildOf(_avatarRoot))
                 {
-                    Debug.LogWarning("[Kaotsuki] アバターの外にあるメッシュは追加できません。");
+                    Debug.LogWarning("[Poyo's Face Util] アバターの外にあるメッシュは追加できません。");
                     return;
                 }
 
                 if (receiver.meshes != null && receiver.meshes.Exists(entry => entry != null && entry.renderer == renderer))
                 {
-                    Debug.LogWarning("[Kaotsuki] このメッシュは既に登録されています。");
+                    Debug.LogWarning("[Poyo's Face Util] このメッシュはすでに登録されています。");
                     return;
                 }
             }
 
-            Undo.RecordObject(receiver, "Kaotsuki");
+            Undo.RecordObject(receiver, FaceUtilInfo.DisplayName);
             switch (kind)
             {
                 case ChangeKind.MapName:
@@ -488,9 +488,9 @@ namespace Poyo.Kaotsuki.Editor
                     SetAll(receiver.meshes[meshIndex], _views[meshIndex], boolValue);
                     break;
                 case ChangeKind.SetSeparator:
-                    KaotsukiSeparators.SetSeparator(receiver.meshes[meshIndex],
+                    FaceUtilSeparators.SetSeparator(receiver.meshes[meshIndex],
                         _views[meshIndex].Names[blendShapeIndex], boolValue,
-                        _views[meshIndex].Auto[blendShapeIndex] != KaotsukiSeparatorRule.None);
+                        _views[meshIndex].Auto[blendShapeIndex] != FaceUtilSeparatorRule.None);
                     break;
                 case ChangeKind.SetGroup:
                     foreach (var member in _views[meshIndex].Groups[groupIndex].Members)
@@ -506,10 +506,10 @@ namespace Poyo.Kaotsuki.Editor
                 case ChangeKind.AddMesh:
                     if (receiver.meshes == null)
                     {
-                        receiver.meshes = new List<KaotsukiMeshEntry>();
+                        receiver.meshes = new List<FaceUtilMeshEntry>();
                     }
 
-                    receiver.meshes.Add(new KaotsukiMeshEntry { renderer = renderer });
+                    receiver.meshes.Add(new FaceUtilMeshEntry { renderer = renderer });
                     break;
             }
 
@@ -518,17 +518,17 @@ namespace Poyo.Kaotsuki.Editor
             RebuildCache(kind == ChangeKind.AddMesh ? receiver.meshes.Count - 1 : -1);
         }
 
-        private static KaotsukiMeshEntry EnsureEntry(KaotsukiReceiver receiver, int index)
+        private static FaceUtilMeshEntry EnsureEntry(FaceUtilReceiver receiver, int index)
         {
             if (receiver.meshes[index] == null)
             {
-                receiver.meshes[index] = new KaotsukiMeshEntry();
+                receiver.meshes[index] = new FaceUtilMeshEntry();
             }
 
             return receiver.meshes[index];
         }
 
-        private static void SetBlendShape(KaotsukiMeshEntry entry, string name, bool enabled)
+        private static void SetBlendShape(FaceUtilMeshEntry entry, string name, bool enabled)
         {
             if (entry.excludedBlendShapes == null)
             {
@@ -545,7 +545,7 @@ namespace Poyo.Kaotsuki.Editor
             }
         }
 
-        private static void SetAll(KaotsukiMeshEntry entry, MeshView view, bool enabled)
+        private static void SetAll(FaceUtilMeshEntry entry, MeshView view, bool enabled)
         {
             if (entry.excludedBlendShapes == null)
             {
@@ -581,7 +581,7 @@ namespace Poyo.Kaotsuki.Editor
                     var path = ExportMap(out var dialogShown);
                     if (path != null)
                     {
-                        Debug.Log("[Kaotsuki] マップを書き出しました: " + path);
+                        Debug.Log("[Poyo's Face Util] マップを書き出しました: " + path);
                     }
 
                     if (dialogShown)
@@ -596,7 +596,7 @@ namespace Poyo.Kaotsuki.Editor
                     var path = ExportMap(out var dialogShown);
                     if (path != null)
                     {
-                        KaotsukiSenderLauncher.Launch(path);
+                        FaceUtilSenderLauncher.Launch(path);
                         GUIUtility.ExitGUI();
                     }
                     else if (dialogShown)
@@ -607,10 +607,10 @@ namespace Poyo.Kaotsuki.Editor
                     break;
                 }
                 case ActionKind.OpenFolder:
-                    KaotsukiSenderLauncher.OpenMapFolder();
+                    FaceUtilSenderLauncher.OpenMapFolder();
                     break;
                 case ActionKind.CreateClip:
-                    if (KaotsukiExpressionClipWriter.Run((KaotsukiReceiver)target, _avatarRoot))
+                    if (FaceUtilExpressionClipWriter.Run((FaceUtilReceiver)target, _avatarRoot))
                     {
                         GUIUtility.ExitGUI();
                     }
@@ -621,28 +621,28 @@ namespace Poyo.Kaotsuki.Editor
         private string ExportMap(out bool dialogShown)
         {
             dialogShown = false;
-            var receiver = (KaotsukiReceiver)target;
-            var table = KaotsukiSlotTable.Build(receiver, _avatarRoot);
+            var receiver = (FaceUtilReceiver)target;
+            var table = FaceUtilSlotTable.Build(receiver, _avatarRoot);
             if (table.Slots.Count == 0)
             {
-                EditorUtility.DisplayDialog("Kaotsuki", "操作できるブレンドシェイプがありません。", "OK");
+                EditorUtility.DisplayDialog(FaceUtilInfo.DisplayName, "操作できるブレンドシェイプがありません。", "OK");
                 dialogShown = true;
                 return null;
             }
 
             try
             {
-                var result = KaotsukiMapWriter.Write(table, receiver, _avatarRoot.gameObject);
+                var result = FaceUtilMapWriter.Write(table, receiver, _avatarRoot.gameObject);
                 if (result.RemovedOtherAvatars)
                 {
-                    Debug.LogWarning("[Kaotsuki] " + string.Format(KaotsukiErrors.MapSharedDetail, result.MapName));
+                    Debug.LogWarning("[Poyo's Face Util] " + string.Format(FaceUtilErrors.MapSharedDetail, result.MapName));
                 }
 
                 return result.Path;
             }
             catch (Exception e)
             {
-                EditorUtility.DisplayDialog("Kaotsuki", "マップを書き出せませんでした。\n" + e.Message, "OK");
+                EditorUtility.DisplayDialog(FaceUtilInfo.DisplayName, "マップを書き出せませんでした。\n" + e.Message, "OK");
                 dialogShown = true;
                 return null;
             }
@@ -650,15 +650,15 @@ namespace Poyo.Kaotsuki.Editor
 
         private void RebuildCache(int expandIndex = -1)
         {
-            var receiver = (KaotsukiReceiver)target;
+            var receiver = (FaceUtilReceiver)target;
             var oldViews = new List<MeshView>(_views);
             _views.Clear();
-            _avatarRoot = KaotsukiSlotTable.FindAvatarRoot(receiver);
-            _table = KaotsukiSlotTable.Build(receiver, _avatarRoot);
-            var tracking = KaotsukiTrackingShapes.Resolve(_avatarRoot);
-            _needsMenuUpgrade = KaotsukiMenuUpgrader.NeedsUpgrade(receiver);
+            _avatarRoot = FaceUtilSlotTable.FindAvatarRoot(receiver);
+            _table = FaceUtilSlotTable.Build(receiver, _avatarRoot);
+            var tracking = FaceUtilTrackingShapes.Resolve(_avatarRoot);
+            _needsMenuUpgrade = FaceUtilMenuUpgrader.NeedsUpgrade(receiver);
             var channelCount = _table.ChannelCount;
-            var syncBits = KaotsukiInfo.FixedSyncBits + 16 * channelCount;
+            var syncBits = FaceUtilInfo.FixedSyncBits + 16 * channelCount;
             _countLabel = new GUIContent(channelCount == 0
                 ? "登録数: 0"
                 : "登録数: " + _table.RegisteredCount + "（枠 " + channelCount + "・同期 " + syncBits + " bit）");
@@ -701,10 +701,10 @@ namespace Poyo.Kaotsuki.Editor
                 view.EditLabels = new GUIContent[total];
                 view.Enabled = new bool[total];
                 view.Frozen = new bool[total];
-                var frozen = KaotsukiFrozenShapes.Resolve(renderer);
+                var frozen = FaceUtilFrozenShapes.Resolve(renderer);
                 view.Visible = new bool[total];
-                view.Auto = KaotsukiSeparators.ResolveAuto(mesh);
-                view.Separator = KaotsukiSeparators.Resolve(mesh, entry, view.Auto);
+                view.Auto = FaceUtilSeparators.ResolveAuto(mesh);
+                view.Separator = FaceUtilSeparators.Resolve(mesh, entry, view.Auto);
                 var ungrouped = new List<int>();
                 var groups = new List<GroupView>();
                 var members = new List<List<int>>();
@@ -720,16 +720,16 @@ namespace Poyo.Kaotsuki.Editor
                     view.Frozen[blendShapeIndex] = frozen.Contains(name);
                     view.Labels[blendShapeIndex] = view.Frozen[blendShapeIndex]
                         ? new GUIContent(name + FrozenSuffix, FrozenTooltip)
-                        : new GUIContent(kind == KaotsukiTrackingKind.LipSync
+                        : new GUIContent(kind == FaceUtilTrackingKind.LipSync
                         ? name + "（口パク）"
-                        : kind == KaotsukiTrackingKind.Eyelid ? name + "（まばたき）" : name);
-                    view.EditLabels[blendShapeIndex] = view.Auto[blendShapeIndex] != KaotsukiSeparatorRule.None
+                        : kind == FaceUtilTrackingKind.Eyelid ? name + "（まばたき）" : name);
+                    view.EditLabels[blendShapeIndex] = view.Auto[blendShapeIndex] != FaceUtilSeparatorRule.None
                         ? new GUIContent(name + "（自動）")
                         : new GUIContent(name);
                     view.Enabled[blendShapeIndex] = enabled;
                     if (view.Separator[blendShapeIndex])
                     {
-                        groups.Add(new GroupView { Label = new GUIContent(KaotsukiSeparators.GroupName(name, view.Auto[blendShapeIndex])) });
+                        groups.Add(new GroupView { Label = new GUIContent(FaceUtilSeparators.GroupName(name, view.Auto[blendShapeIndex])) });
                         members.Add(new List<int>());
                         continue;
                     }

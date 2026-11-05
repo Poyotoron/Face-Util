@@ -5,14 +5,14 @@ using nadena.dev.ndmf.fluent;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 
-[assembly: ExportsPlugin(typeof(Poyo.Kaotsuki.Editor.KaotsukiPlugin))]
+[assembly: ExportsPlugin(typeof(Poyo.FaceUtil.Editor.FaceUtilPlugin))]
 
-namespace Poyo.Kaotsuki.Editor
+namespace Poyo.FaceUtil.Editor
 {
-    public sealed class KaotsukiPlugin : Plugin<KaotsukiPlugin>
+    public sealed class FaceUtilPlugin : Plugin<FaceUtilPlugin>
     {
-        public override string QualifiedName => KaotsukiInfo.PackageId;
-        public override string DisplayName => KaotsukiInfo.DisplayName;
+        public override string QualifiedName => FaceUtilInfo.PackageId;
+        public override string DisplayName => FaceUtilInfo.DisplayName;
 
         protected override void Configure()
         {
@@ -21,15 +21,15 @@ namespace Poyo.Kaotsuki.Editor
             //       Transforming で、Avatar Blink Fix の後に走らせる。入っていないプラグインへの順序指定は NDMF が無視する。
             // NOTE: 生成した Modular Avatar のコンポーネントを Modular Avatar 自身に処理させるため、Modular Avatar より先に走らせる。
             InPhase(BuildPhase.Transforming)
-                .AfterPlugin(KaotsukiInfo.BlinkFixPluginId)
-                .AfterPlugin(KaotsukiInfo.BlinkFixBakePluginId)
-                .BeforePlugin(KaotsukiInfo.ModularAvatarPluginId)
+                .AfterPlugin(FaceUtilInfo.BlinkFixPluginId)
+                .AfterPlugin(FaceUtilInfo.BlinkFixBakePluginId)
+                .BeforePlugin(FaceUtilInfo.ModularAvatarPluginId)
                 .Run("Generate receiver", Generate);
         }
 
         private static void Generate(BuildContext ctx)
         {
-            var receivers = ctx.AvatarRootObject.GetComponentsInChildren<KaotsukiReceiver>(true);
+            var receivers = ctx.AvatarRootObject.GetComponentsInChildren<FaceUtilReceiver>(true);
             if (receivers.Length == 0)
             {
                 return;
@@ -37,33 +37,33 @@ namespace Poyo.Kaotsuki.Editor
 
             if (receivers.Length > 1)
             {
-                KaotsukiErrors.Report(ErrorSeverity.Error, KaotsukiErrors.Multiple);
+                FaceUtilErrors.Report(ErrorSeverity.Error, FaceUtilErrors.Multiple);
                 return;
             }
 
             var receiver = receivers[0];
-            var table = KaotsukiSlotTable.Build(receiver, ctx.AvatarRootTransform);
+            var table = FaceUtilSlotTable.Build(receiver, ctx.AvatarRootTransform);
             if (table.SkippedReasons.Count > 0)
             {
-                KaotsukiErrors.Report(
+                FaceUtilErrors.Report(
                     ErrorSeverity.NonFatal,
-                    KaotsukiErrors.Skipped,
+                    FaceUtilErrors.Skipped,
                     string.Join("\n", table.SkippedReasons));
             }
 
             if (table.TruncatedCount > 0)
             {
-                KaotsukiErrors.Report(ErrorSeverity.NonFatal, KaotsukiErrors.Truncated, table.TruncatedCount);
+                FaceUtilErrors.Report(ErrorSeverity.NonFatal, FaceUtilErrors.Truncated, table.TruncatedCount);
             }
 
             if (table.Slots.Count == 0)
             {
-                KaotsukiErrors.Report(ErrorSeverity.NonFatal, KaotsukiErrors.NoSlots);
+                FaceUtilErrors.Report(ErrorSeverity.NonFatal, FaceUtilErrors.NoSlots);
                 return;
             }
 
-            KaotsukiTrackingShapes.CreateCopies(table);
-            var controller = KaotsukiAnimatorBuilder.Build(table, receiver.overrideEyes);
+            FaceUtilTrackingShapes.CreateCopies(table);
+            var controller = FaceUtilAnimatorBuilder.Build(table, receiver.overrideEyes);
             var merge = receiver.gameObject.AddComponent<ModularAvatarMergeAnimator>();
             merge.animator = controller;
             merge.layerType = VRCAvatarDescriptor.AnimLayerType.FX;
@@ -75,30 +75,30 @@ namespace Poyo.Kaotsuki.Editor
             merge.mergeAnimatorMode = MergeAnimatorMode.Append;
 
             var parameters = receiver.gameObject.AddComponent<ModularAvatarParameters>();
-            parameters.parameters.Add(CreateParameter(KaotsukiInfo.ParamEnabled, ParameterSyncType.Bool));
-            parameters.parameters.Add(CreateParameter(KaotsukiInfo.ParamLipSync, ParameterSyncType.Bool));
+            parameters.parameters.Add(CreateParameter(FaceUtilInfo.ParamEnabled, ParameterSyncType.Bool));
+            parameters.parameters.Add(CreateParameter(FaceUtilInfo.ParamLipSync, ParameterSyncType.Bool));
             for (var channel = 1; channel <= table.ChannelCount; channel++)
             {
-                parameters.parameters.Add(CreateParameter(KaotsukiInfo.IndexParam(channel), ParameterSyncType.Int));
-                parameters.parameters.Add(CreateParameter(KaotsukiInfo.ValueParam(channel), ParameterSyncType.Int));
+                parameters.parameters.Add(CreateParameter(FaceUtilInfo.IndexParam(channel), ParameterSyncType.Int));
+                parameters.parameters.Add(CreateParameter(FaceUtilInfo.ValueParam(channel), ParameterSyncType.Int));
             }
 
             try
             {
-                var result = KaotsukiMapWriter.Write(table, receiver, ctx.AvatarRootObject);
-                Debug.Log("[Kaotsuki] マップを書き出しました: " + result.Path);
+                var result = FaceUtilMapWriter.Write(table, receiver, ctx.AvatarRootObject);
+                Debug.Log("[Poyo's Face Util] マップを書き出しました: " + result.Path);
                 if (result.RemovedOtherAvatars)
                 {
-                    KaotsukiErrors.Report(ErrorSeverity.NonFatal, KaotsukiErrors.MapShared, result.MapName);
+                    FaceUtilErrors.Report(ErrorSeverity.NonFatal, FaceUtilErrors.MapShared, result.MapName);
                 }
             }
             catch (IOException e)
             {
-                KaotsukiErrors.Report(ErrorSeverity.NonFatal, KaotsukiErrors.MapWrite, e.Message);
+                FaceUtilErrors.Report(ErrorSeverity.NonFatal, FaceUtilErrors.MapWrite, e.Message);
             }
             catch (System.UnauthorizedAccessException e)
             {
-                KaotsukiErrors.Report(ErrorSeverity.NonFatal, KaotsukiErrors.MapWrite, e.Message);
+                FaceUtilErrors.Report(ErrorSeverity.NonFatal, FaceUtilErrors.MapWrite, e.Message);
             }
         }
 

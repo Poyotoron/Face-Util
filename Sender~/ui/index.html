@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kaotsuki Sender</title>
+  <title>Poyo's Face Util Sender</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,19 +21,19 @@
 
     <section class="controls">
       <div class="action-buttons">
-        <span class="switch-label" id="enabled-label">Kaotsuki</span>
+        <span class="switch-label" id="enabled-label">Face Util</span>
         <button id="toggle-enabled" class="switch" type="button" role="switch" aria-checked="true" aria-labelledby="enabled-label">
           <span class="switch-text">ON</span>
         </button>
         <span class="switch-label" id="lipsync-label">口パク</span>
         <button id="toggle-lipsync" class="switch" type="button" role="switch" aria-checked="false"
-                aria-labelledby="lipsync-label" title="Kaotsuki が ON の間も口パクを動かします" disabled>
+                aria-labelledby="lipsync-label" title="Face Util が ON の間も口パクを動かします" disabled>
           <span class="switch-text">OFF</span>
         </button>
         <button id="btn-reset" type="button" disabled>リセット</button>
       </div>
       <div class="target">
-        <span id="target-info">送信先 —</span>
+        <span id="target-info">送信先</span>
         <button id="btn-settings" type="button" title="設定">⚙</button>
       </div>
     </section>
@@ -59,7 +59,7 @@
       <input id="set-port" type="number" min="1" max="65535" required>
       <label for="set-hold">保持時間（ミリ秒）</label>
       <input id="set-hold" type="number" min="100" max="1000" step="10" required>
-      <label class="check"><input id="set-receive" type="checkbox"> VRChat から受信する（アバターに合わせてマップを切り換える）</label>
+      <label class="check"><input id="set-receive" type="checkbox"> VRChat から受信する（アバターに合わせてマップを切り替える）</label>
       <label for="set-receive-port">受信ポート</label>
       <input id="set-receive-port" type="number" min="1" max="65535" required>
       <p id="settings-error" role="alert"></p>

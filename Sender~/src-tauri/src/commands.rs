@@ -9,6 +9,12 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tauri::{AppHandle, Emitter, Manager, State};
 
+// 保存先の規則をそろえ、以前の版のデータを残したまま引き継ぐため。
+const DATA_FOLDER: &str = "FaceUtil";
+const LEGACY_DATA_FOLDER: &str = "Kaotsuki";
+const MAP_FOLDER: &str = "Maps";
+const EXPRESSION_FOLDER: &str = "Expressions";
+
 pub struct AppState {
     pub scheduler: Arc<Mutex<Scheduler>>,
     pub settings: Mutex<Settings>,
@@ -22,8 +28,8 @@ pub fn map_folder(app: &AppHandle) -> Result<PathBuf, String> {
         .path()
         .local_data_dir()
         .map_err(|error| error.to_string())?
-        .join("Kaotsuki")
-        .join("Maps"))
+        .join(DATA_FOLDER)
+        .join(MAP_FOLDER))
 }
 
 #[tauri::command]
@@ -239,10 +245,32 @@ pub fn expression_folder(app: AppHandle) -> Result<String, String> {
         .path()
         .local_data_dir()
         .map_err(|error| error.to_string())?
-        .join("Kaotsuki")
-        .join("Expressions");
+        .join(DATA_FOLDER)
+        .join(EXPRESSION_FOLDER);
+    let existed = folder.exists();
     std::fs::create_dir_all(&folder)
         .map_err(|error| format!("表情のフォルダを作れませんでした: {error}"))?;
+    // 表情は利用者が作ったものなので、複製して旧フォルダを残す。
+    // Unity 側も同じ規則を使うため、先に動いた側だけが複製する。
+    if !existed {
+        if let Some(base) = folder.parent().and_then(std::path::Path::parent) {
+            let legacy = base.join(LEGACY_DATA_FOLDER).join(EXPRESSION_FOLDER);
+            if let Ok(files) = std::fs::read_dir(legacy) {
+                for entry in files.flatten() {
+                    let source = entry.path();
+                    let destination = folder.join(entry.file_name());
+                    if source.is_file()
+                        && source
+                            .extension()
+                            .is_some_and(|ext| ext.eq_ignore_ascii_case("json"))
+                        && !destination.exists()
+                    {
+                        let _ = std::fs::copy(source, destination);
+                    }
+                }
+            }
+        }
+    }
     Ok(folder.to_string_lossy().into_owned())
 }
 
