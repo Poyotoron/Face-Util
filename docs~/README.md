@@ -1,6 +1,6 @@
 # ドキュメントサイト
 
-このフォルダには、GitHub Pages で公開する Kaotsuki のドキュメント一式があります。MkDocs Material で作成しています。
+このフォルダには、GitHub Pages で公開する Poyo's Face Util のドキュメント一式があります。MkDocs Material で作成しています。
 
 以下のコマンドは、すべて PowerShell でリポジトリのルート（`package.json` がある階層）から実行してください。
 
@@ -40,11 +40,11 @@ mkdocs serve -f "docs~/mkdocs.yml"
 ## 公開前の確認（CI と同じ条件）
 
 ```powershell
-$env:KAOTSUKI_VERSION = "0.3.0"
+$env:PACKAGE_VERSION = "0.3.0"
 mkdocs build --strict -f "docs~/mkdocs.yml"
 ```
 
-警告が 1 つでもあるとビルドは失敗します。`KAOTSUKI_VERSION` はフッタの「対応バージョン」に使われ、渡さなければ `dev` と表示されます。公開時は Actions が `package.json` の `version` を読み取って渡すため、ページ側にバージョン番号を書かないでください。
+警告が 1 つでもあるとビルドは失敗します。`PACKAGE_VERSION` はフッタの「対応バージョン」に使われ、渡さなければ `dev` と表示されます。公開時は Actions が `package.json` の `version` を読み取って渡すため、ページ側にバージョン番号を書かないでください。
 
 ## 終了
 
@@ -78,4 +78,4 @@ uv pip install -r "docs~/requirements.txt"
 
 - ビルド成果物の `docs~/site/` はコミットしないでください。
 - **フォルダ名の末尾の `~` を消さないでください。** Unity は末尾が `~` のフォルダを取り込まないため、配下に `.meta` が作られません。改名すると `.meta` が大量に生成され、配布物にも混ざります。
-- 画像は使わず、表と注記ブロックで説明してください。
+- スクリーンショットは `docs/images/` に PNG で置き、本文から `![説明](images/ファイル名.png)` で参照してください。撮影に使ってよいアセットは、はじめにのページの「スクリーンショットについて」に載せたものだけです。撮影の予定位置は本文中の `<!-- shot: ID | 内容 -->` のコメントで示しています。

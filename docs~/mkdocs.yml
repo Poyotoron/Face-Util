@@ -1,6 +1,6 @@
-site_name: Kaotsuki
-site_url: https://ghp.maaaaa.net/Kaotsuki/
-repo_url: https://github.com/Poyotoron/Kaotsuki
+site_name: "Poyo's Face Util"
+site_url: https://ghp.maaaaa.net/Face-Util/
+repo_url: https://github.com/Poyotoron/Face-Util
 site_dir: site
 
 theme:
@@ -48,7 +48,7 @@ extra_css:
   - stylesheets/extra.css
 
 extra:
-  kaotsuki_version: !ENV [KAOTSUKI_VERSION, dev]
+  package_version: !ENV [PACKAGE_VERSION, dev]
 
 nav:
   - はじめに: index.md
@@ -57,9 +57,9 @@ nav:
   - 受け手の設定: receiver.md
   - 送り手の使い方: sender.md
   - 表情と AnimationClip: expressions.md
-  - マップと自動切換え: maps.md
+  - マップ: maps.md
   - 口パクとまばたき: tracking.md
-  - 他のツールとの併用: other-tools.md
+  - ほかのツールとの併用: other-tools.md
   - OSC の仕様: osc.md
   - 困ったときは: troubleshooting.md
   - 更新履歴: changelog.md
