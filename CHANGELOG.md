@@ -2,6 +2,20 @@
 
 このプロジェクトの変更履歴。バージョニングは [Semantic Versioning](https://semver.org/lang/ja/) に従う。
 
+## [0.4.0] - 2026-11-05
+
+名前を「Kaotsuki」から「Poyo's Face Util」に変えた。OSC のパラメータ名も変わったので、アバターはビルドし直してアップロードし直す必要がある。
+
+### Changed
+- **名前を変えた。** 表示名は「Poyo's Face Util」、パッケージ ID は `net.maaaaa.face-util`、メニューは `GameObject > Poyo's Face Util > Setup` と `Tools > Poyo's Face Util`、コンポーネントは「Face Util Receiver」、送り手は「Poyo's Face Util Sender」（`Bin~/FaceUtilSender.exe`）になった。リポジトリは [Poyotoron/Face-Util](https://github.com/Poyotoron/Face-Util)、ドキュメントは [https://ghp.maaaaa.net/Face-Util/](https://ghp.maaaaa.net/Face-Util/) に移った。
+- **OSC のパラメータ名を `Kaotsuki/…` から `FaceUtil/…` に変えた。** 旧版でビルドしてアップロードしたアバターは、ビルドし直してアップロードし直すまで、送り手のマップの一覧と自動の切り替えに出ない。旧版で書き出したマップを送り手で直接開けば、アップロードし直す前のアバターにも送れる。
+- アバターの中に作るもの（GameObject・Expression メニューの項目・Animator のレイヤー）の名前を「Face Util」にした。
+- **アバターに付けた受け手はそのまま使える。** スクリプトの GUID を保ったので、Missing Script にならず、設定もそのまま残る。
+- **旧版は自動で外れる。** `package.json` の `legacyPackages` に旧 ID を書いたので、VCC / ALCOM で新版を入れると旧版が削除される。旧版と同じプロジェクトに入っている間は、Console に旧版の削除を求める警告を 1 回出す。
+- **マップと表情の保存先を `%LOCALAPPDATA%\FaceUtil\` に変えた。** 旧版で保存した表情は、新しいフォルダが無いときに複製して使う。旧いフォルダは消さない。旧版の形式の表情ファイルも読める。マップはビルドのたびに書き出し直すので、引き継がない。
+- **送り手の設定を引き継ぐ。** 新しい設定が無いときは、旧版の送り手の設定（送信先・ポート・保持時間など）を読む。
+- 画面の文言をいくつか直した（「切り換える」を「切り替える」に、マップの表示を「〇本（〇枠）」に、など）。
+
 ## [0.3.0] - 2026-10-01
 
 ### Added
