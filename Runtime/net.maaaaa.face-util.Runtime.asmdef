@@ -1,6 +1,6 @@
 {
-    "name": "net.maaaaa.kaotsuki.Runtime",
-    "rootNamespace": "Poyo.Kaotsuki",
+    "name": "net.maaaaa.face-util.Runtime",
+    "rootNamespace": "Poyo.FaceUtil",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],

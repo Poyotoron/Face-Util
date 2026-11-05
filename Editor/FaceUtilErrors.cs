@@ -3,24 +3,24 @@ using System.Collections.Generic;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.localization;
 
-namespace Poyo.Kaotsuki.Editor
+namespace Poyo.FaceUtil.Editor
 {
-    internal static class KaotsukiErrors
+    internal static class FaceUtilErrors
     {
-        internal const string Multiple = "kaotsuki.error.multiple";
-        internal const string NoSlots = "kaotsuki.warn.no_slots";
-        internal const string Truncated = "kaotsuki.warn.truncated";
-        internal const string Skipped = "kaotsuki.warn.skipped";
-        internal const string MapWrite = "kaotsuki.warn.map_write";
-        internal const string MapShared = "kaotsuki.warn.map_shared";
+        internal const string Multiple = "face-util.error.multiple";
+        internal const string NoSlots = "face-util.warn.no_slots";
+        internal const string Truncated = "face-util.warn.truncated";
+        internal const string Skipped = "face-util.warn.skipped";
+        internal const string MapWrite = "face-util.warn.map_write";
+        internal const string MapShared = "face-util.warn.map_shared";
         internal const string MapSharedDetail =
             "マップ「{0}」を使っていた他のアバターとブレンドシェイプの構成が違うため、他のアバターの登録を外しました。" +
-            "外れたアバターは、ビルドし直すまで送り手の自動切換えの対象になりません。";
+            "外れたアバターは、ビルドし直すまで送り手の自動切り替えの対象になりません。";
 
         private static readonly Dictionary<string, string> Messages = new Dictionary<string, string>
         {
-            { Multiple, "Kaotsuki が複数あります" },
-            { Multiple + ":description", "アバター内の Kaotsuki Receiver を 1 つにしてください。" },
+            { Multiple, "Poyo's Face Util が複数あります" },
+            { Multiple + ":description", "アバター内の Face Util Receiver を 1 つにしてください。" },
             { NoSlots, "操作できるブレンドシェイプがありません" },
             { NoSlots + ":description", "メッシュを登録し、ブレンドシェイプを 1 つ以上 ON にしてください。" },
             { Truncated, "登録数が上限を超えています" },

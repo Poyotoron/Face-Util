@@ -41,7 +41,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: sender
-          path: Sender~/src-tauri/target/release/kaotsuki-sender.exe
+          path: Sender~/src-tauri/target/release/face-util-sender.exe
           if-no-files-found: error
 
   build:
@@ -94,7 +94,7 @@ jobs:
       - name: Place Sender
         run: |
           mkdir -p 'Bin~'
-          cp "${{ runner.temp }}/sender/kaotsuki-sender.exe" 'Bin~/KaotsukiSender.exe'
+          cp "${{ runner.temp }}/sender/face-util-sender.exe" 'Bin~/FaceUtilSender.exe'
 
       # パッケージ本体を zip 化する。ドットで始まるフォルダは開発用なので配布物に含めない。
       # 送り手はビルド済みの exe（Bin~/）だけを含め、ソース（Sender~/）は含めない。
@@ -127,6 +127,6 @@ jobs:
             ${{ env.zipFile }}
             ${{ env.unityPackage }}
             package.json
-            Bin~/KaotsukiSender.exe
+            Bin~/FaceUtilSender.exe
           tag_name: ${{ env.version }}
           body_path: ${{ env.releaseNotes }}

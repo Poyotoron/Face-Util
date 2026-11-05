@@ -5,6 +5,8 @@ use std::path::Path;
 use std::time::UNIX_EPOCH;
 
 const OSC_PREFIX: &str = "/avatar/parameters/";
+pub const FORMAT: &str = "face-util-map";
+pub const LEGACY_FORMAT: &str = "kaotsuki-map";
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -124,7 +126,8 @@ pub fn load(path: &Path) -> Result<(MapView, ParamNames), String> {
     let raw: RawMap =
         serde_json::from_str(content).map_err(|_| "対応していないファイルです".to_string())?;
 
-    if raw.format != "kaotsuki-map"
+    // 明示して開いた旧版のマップは、その中のパラメータ名で送信できる。
+    if (raw.format != FORMAT && raw.format != LEGACY_FORMAT)
         || raw.version != 1
         || raw.value_max != 255
         || raw.parameters.channels.is_empty()
@@ -273,7 +276,7 @@ mod tests {
 
     fn with_map_file(content: &str, test: impl FnOnce(&std::path::Path)) {
         let path = std::env::temp_dir().join(format!(
-            "kaotsuki-map-test-{}-{}.json",
+            "face-util-map-test-{}-{}.json",
             std::process::id(),
             NEXT_FILE_ID.fetch_add(1, Ordering::Relaxed)
         ));
@@ -301,6 +304,18 @@ mod tests {
     }
 
     #[test]
+    fn current_and_legacy_formats_are_accepted() {
+        for format in [super::FORMAT, super::LEGACY_FORMAT] {
+            let content = format!(
+                r#"{{"format":"{format}","version":1,"avatarName":"Test","parameters":{{"enabled":"Enabled","channels":[{{"index":"Index","value":"Value"}}]}},"valueMax":255,"slots":[]}}"#
+            );
+            with_map_file(&content, |path| {
+                assert!(load(path).is_ok());
+            });
+        }
+    }
+
+    #[test]
     fn wrong_format_is_rejected() {
         with_map_file(
             r#"{
@@ -324,7 +339,7 @@ mod tests {
     fn empty_channels_are_rejected() {
         with_map_file(
             r#"{
-                "format":"kaotsuki-map",
+                "format":"face-util-map",
                 "version":1,
                 "avatarName":"Test",
                 "parameters":{"enabled":"Enabled","channels":[]},
@@ -344,7 +359,7 @@ mod tests {
     fn slots_use_channel_index_pairs() {
         with_map_file(
             r#"{
-                "format":"kaotsuki-map",
+                "format":"face-util-map",
                 "version":1,
                 "avatarName":"Test",
                 "parameters":{"enabled":"Enabled","channels":[
@@ -371,9 +386,9 @@ mod tests {
 
     fn map_json(fields: serde_json::Value) -> String {
         let mut value = serde_json::json!({
-            "format": "kaotsuki-map", "version": 1, "avatarName": "Foo_Casual",
+            "format": "face-util-map", "version": 1, "avatarName": "Foo_Casual",
             "blueprintId": "avtr_a", "valueMax": 255,
-            "parameters": {"enabled": "Kaotsuki/Enabled", "channels": [{"index": "Kaotsuki/Index", "value": "Kaotsuki/Value"}]},
+            "parameters": {"enabled": "FaceUtil/Enabled", "channels": [{"index": "FaceUtil/Index", "value": "FaceUtil/Value"}]},
             "slots": [{"channel": 1, "index": 1, "mesh": "Body", "blendShape": "a", "defaultWeight": 0}]
         });
         for (key, entry) in fields.as_object().expect("fields object") {
@@ -429,7 +444,7 @@ mod tests {
     #[test]
     fn find_by_avatar_uses_avatars() {
         let folder = std::env::temp_dir().join(format!(
-            "kaotsuki-map-folder-{}-{}",
+            "face-util-map-folder-{}-{}",
             std::process::id(),
             NEXT_FILE_ID.fetch_add(1, Ordering::Relaxed)
         ));
@@ -449,15 +464,15 @@ mod tests {
     #[test]
     fn lip_sync_is_read() {
         let json = map_json(serde_json::json!({"parameters": {
-            "enabled": "Kaotsuki/Enabled", "lipSync": "Kaotsuki/LipSync",
-            "channels": [{"index": "Kaotsuki/Index", "value": "Kaotsuki/Value"}]
+            "enabled": "FaceUtil/Enabled", "lipSync": "FaceUtil/LipSync",
+            "channels": [{"index": "FaceUtil/Index", "value": "FaceUtil/Value"}]
         }}));
         with_map_file(&json, |path| {
             let (map, params) = load(path).expect("map");
             assert!(map.has_lip_sync);
             assert_eq!(
                 params.lip_sync.as_deref(),
-                Some("/avatar/parameters/Kaotsuki/LipSync")
+                Some("/avatar/parameters/FaceUtil/LipSync")
             );
         });
     }

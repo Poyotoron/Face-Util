@@ -5,14 +5,14 @@ using System.IO;
 using System.Text;
 using UnityEngine;
 
-namespace Poyo.Kaotsuki.Editor
+namespace Poyo.FaceUtil.Editor
 {
-    internal static class KaotsukiMapWriter
+    internal static class FaceUtilMapWriter
     {
-        /// <summary>%LOCALAPPDATA%\Kaotsuki\Maps</summary>
+        /// <summary>%LOCALAPPDATA%\FaceUtil\Maps</summary>
         internal static string MapFolder { get; } = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Kaotsuki",
+            "FaceUtil",
             "Maps");
 
         internal readonly struct WriteResult
@@ -53,23 +53,23 @@ namespace Poyo.Kaotsuki.Editor
         }
 
         /// <summary>マップ名。mapName が空ならアバター名。</summary>
-        internal static string ResolveMapName(KaotsukiReceiver receiver, GameObject avatarRoot)
+        internal static string ResolveMapName(FaceUtilReceiver receiver, GameObject avatarRoot)
         {
             var name = receiver.mapName?.Trim();
             return SanitizeName(string.IsNullOrEmpty(name) ? avatarRoot.name : name);
         }
 
-        internal static string GetMapPath(KaotsukiReceiver receiver, GameObject avatarRoot)
+        internal static string GetMapPath(FaceUtilReceiver receiver, GameObject avatarRoot)
         {
             return Path.Combine(MapFolder, ResolveMapName(receiver, avatarRoot) + ".json");
         }
 
         /// <summary>マップを書き出す。I/O の失敗は例外のまま投げる。</summary>
-        internal static WriteResult Write(KaotsukiSlotTable table, KaotsukiReceiver receiver, GameObject avatarRoot)
+        internal static WriteResult Write(FaceUtilSlotTable table, FaceUtilReceiver receiver, GameObject avatarRoot)
         {
             var pipeline = avatarRoot.GetComponent<VRC.Core.PipelineManager>();
             var mapName = ResolveMapName(receiver, avatarRoot);
-            var map = new KaotsukiMap
+            var map = new FaceUtilMap
             {
                 mapName = mapName,
                 avatarName = SanitizeName(avatarRoot.name),
@@ -79,16 +79,16 @@ namespace Poyo.Kaotsuki.Editor
 
             for (var channel = 1; channel <= table.ChannelCount; channel++)
             {
-                map.parameters.channels.Add(new KaotsukiMapChannel
+                map.parameters.channels.Add(new FaceUtilMapChannel
                 {
-                    index = KaotsukiInfo.IndexParam(channel),
-                    value = KaotsukiInfo.ValueParam(channel),
+                    index = FaceUtilInfo.IndexParam(channel),
+                    value = FaceUtilInfo.ValueParam(channel),
                 });
             }
 
             foreach (var slot in table.Slots)
             {
-                map.slots.Add(new KaotsukiMapSlot
+                map.slots.Add(new FaceUtilMapSlot
                 {
                     channel = slot.Channel,
                     index = slot.Index,
@@ -99,7 +99,7 @@ namespace Poyo.Kaotsuki.Editor
                 });
             }
 
-            var current = new KaotsukiMapAvatar { name = map.avatarName, blueprintId = map.blueprintId };
+            var current = new FaceUtilMapAvatar { name = map.avatarName, blueprintId = map.blueprintId };
             var path = GetMapPath(receiver, avatarRoot);
             var existing = TryReadExisting(path);
             var removed = false;
@@ -109,7 +109,7 @@ namespace Poyo.Kaotsuki.Editor
                 {
                     if (avatar != null)
                     {
-                        map.avatars.Add(new KaotsukiMapAvatar { name = avatar.name, blueprintId = avatar.blueprintId });
+                        map.avatars.Add(new FaceUtilMapAvatar { name = avatar.name, blueprintId = avatar.blueprintId });
                     }
                 }
 
@@ -126,18 +126,18 @@ namespace Poyo.Kaotsuki.Editor
             return new WriteResult(path, mapName, removed);
         }
 
-        private static KaotsukiMap TryReadExisting(string path)
+        private static FaceUtilMap TryReadExisting(string path)
         {
             if (!File.Exists(path))
             {
                 return null;
             }
 
-            KaotsukiMap map;
+            FaceUtilMap map;
             // NOTE: 読めない既存ファイルは共有の相手が分からないので、今のアバターだけのマップとして書き直す。
             try
             {
-                map = JsonUtility.FromJson<KaotsukiMap>(File.ReadAllText(path, Encoding.UTF8));
+                map = JsonUtility.FromJson<FaceUtilMap>(File.ReadAllText(path, Encoding.UTF8));
             }
             catch (IOException)
             {
@@ -152,17 +152,17 @@ namespace Poyo.Kaotsuki.Editor
                 return null;
             }
 
-            if (map == null || map.format != "kaotsuki-map" || map.version != 1 || map.slots == null)
+            if (map == null || map.format != "face-util-map" || map.version != 1 || map.slots == null)
             {
                 return null;
             }
 
             if (map.avatars == null || map.avatars.Count == 0)
             {
-                map.avatars = new List<KaotsukiMapAvatar>();
+                map.avatars = new List<FaceUtilMapAvatar>();
                 if (!string.IsNullOrEmpty(map.avatarName))
                 {
-                    map.avatars.Add(new KaotsukiMapAvatar { name = map.avatarName, blueprintId = map.blueprintId ?? string.Empty });
+                    map.avatars.Add(new FaceUtilMapAvatar { name = map.avatarName, blueprintId = map.blueprintId ?? string.Empty });
                 }
             }
 
@@ -170,7 +170,7 @@ namespace Poyo.Kaotsuki.Editor
         }
 
         // NOTE: 衣装違いで体型の既定値だけが違うアバターでも共有できるように、既定値は比べない。
-        private static bool SameStructure(KaotsukiMap a, KaotsukiMap b)
+        private static bool SameStructure(FaceUtilMap a, FaceUtilMap b)
         {
             if (a.slots.Count != b.slots.Count)
             {
@@ -192,14 +192,14 @@ namespace Poyo.Kaotsuki.Editor
             return true;
         }
 
-        private static bool Matches(KaotsukiMapAvatar entry, KaotsukiMapAvatar current)
+        private static bool Matches(FaceUtilMapAvatar entry, FaceUtilMapAvatar current)
         {
             return !string.IsNullOrEmpty(current.blueprintId) &&
                    string.Equals(entry.blueprintId, current.blueprintId, StringComparison.Ordinal) ||
                    string.IsNullOrEmpty(entry.blueprintId) && string.Equals(entry.name, current.name, StringComparison.Ordinal);
         }
 
-        private static void Merge(List<KaotsukiMapAvatar> list, KaotsukiMapAvatar current)
+        private static void Merge(List<FaceUtilMapAvatar> list, FaceUtilMapAvatar current)
         {
             if (!string.IsNullOrEmpty(current.blueprintId))
             {

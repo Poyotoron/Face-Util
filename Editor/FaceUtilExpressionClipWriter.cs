@@ -3,40 +3,40 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace Poyo.Kaotsuki.Editor
+namespace Poyo.FaceUtil.Editor
 {
     // NOTE: 既定値のままのスロットも含めて、登録済みの全スロットを書く。Write Defaults OFF の環境では、
     //       書かなかったブレンドシェイプが前の表情のまま残るため。
     // NOTE: パスは表情ファイルではなく、このアバターのスロット表のものを使う。別のアバターで保存した表情でも動くようにするため。
-    internal static class KaotsukiExpressionClipWriter
+    internal static class FaceUtilExpressionClipWriter
     {
         /// <summary>表情ファイルを選ばせ、このアバター用の AnimationClip を保存する。ダイアログを出したら true。</summary>
-        internal static bool Run(KaotsukiReceiver receiver, Transform avatarRoot)
+        internal static bool Run(FaceUtilReceiver receiver, Transform avatarRoot)
         {
             try
             {
-                Directory.CreateDirectory(KaotsukiExpression.Folder);
-                var expressionPath = EditorUtility.OpenFilePanel("表情ファイルを選ぶ", KaotsukiExpression.Folder, "json");
+                FaceUtilExpression.EnsureFolder();
+                var expressionPath = EditorUtility.OpenFilePanel("表情ファイルを選ぶ", FaceUtilExpression.Folder, "json");
                 if (string.IsNullOrEmpty(expressionPath))
                 {
                     return true;
                 }
 
-                var entries = KaotsukiExpression.Load(expressionPath);
+                var entries = FaceUtilExpression.Load(expressionPath);
                 if (entries == null)
                 {
-                    EditorUtility.DisplayDialog("Kaotsuki", "対応していないファイルです。", "OK");
+                    EditorUtility.DisplayDialog(FaceUtilInfo.DisplayName, "対応していないファイルです。", "OK");
                     return true;
                 }
 
-                var table = KaotsukiSlotTable.Build(receiver, avatarRoot);
+                var table = FaceUtilSlotTable.Build(receiver, avatarRoot);
                 if (table.Slots.Count == 0)
                 {
-                    EditorUtility.DisplayDialog("Kaotsuki", "操作できるブレンドシェイプがありません。", "OK");
+                    EditorUtility.DisplayDialog(FaceUtilInfo.DisplayName, "操作できるブレンドシェイプがありません。", "OK");
                     return true;
                 }
 
-                var weights = KaotsukiExpression.Match(table.Slots, entries, out var applied, out var unmatched);
+                var weights = FaceUtilExpression.Match(table.Slots, entries, out var applied, out var unmatched);
                 var path = EditorUtility.SaveFilePanelInProject("AnimationClip を保存",
                     Path.GetFileNameWithoutExtension(expressionPath), "anim", "保存先を選んでください。");
                 if (string.IsNullOrEmpty(path))
@@ -57,7 +57,7 @@ namespace Poyo.Kaotsuki.Editor
                 var clip = existing as AnimationClip;
                 if (existing != null && clip == null)
                 {
-                    EditorUtility.DisplayDialog("Kaotsuki", "そのパスには AnimationClip 以外のアセットがあります。", "OK");
+                    EditorUtility.DisplayDialog(FaceUtilInfo.DisplayName, "そのパスには AnimationClip 以外のアセットがあります。", "OK");
                     return true;
                 }
 
@@ -80,14 +80,14 @@ namespace Poyo.Kaotsuki.Editor
                 EditorUtility.SetDirty(clip);
                 AssetDatabase.SaveAssets();
                 EditorGUIUtility.PingObject(clip);
-                Debug.Log("[Kaotsuki] AnimationClip を作りました: " + path + "（" + applied + " 件を適用" +
+                Debug.Log("[Poyo's Face Util] AnimationClip を作りました: " + path + "（" + applied + " 件を適用" +
                           (unmatched > 0 ? "、" + unmatched + " 件はこのアバターにありません" : "") + "）");
                 return true;
             }
             catch (Exception error)
             {
                 Debug.LogException(error);
-                EditorUtility.DisplayDialog("Kaotsuki", "AnimationClip を作れませんでした。\n" + error.Message, "OK");
+                EditorUtility.DisplayDialog(FaceUtilInfo.DisplayName, "AnimationClip を作れませんでした。\n" + error.Message, "OK");
                 return true;
             }
         }

@@ -1,153 +1,45 @@
-# Kaotsuki
+# Poyo's Face Util
 
-Kaotsuki は、VRChat の外からアバターの表情（ブレンドシェイプ）を OSC で 1 本ずつ直接動かせるツールです。
-アバターに組み込む受け手の Unity パッケージと、スライダーで操作する Windows 用の送り手アプリで構成されています。
+VRChat にいるアバターの表情（ブレンドシェイプ）を、VRChat の外から OSC で 1 本ずつ動かすツールです。アバターに組み込む受け手（Unity パッケージ）と、スライダーで操作する Windows の送り手アプリでできています。
 
-[使い方ドキュメント](https://ghp.maaaaa.net/Kaotsuki/)では、受け手の設定・送り手の操作・表情の保存を詳しく説明しています。
-
-## 特徴
-
-- **非破壊**: 元のアバターを書き換えず、ビルド時に必要なレイヤーとパラメータを組み込みます。
-- **かんたん Setup**: Hierarchy でアバターを右クリックするだけで受け手を追加できます。
-- **対象を選べる**: Inspector で操作するブレンドシェイプを選べ、すべてをまとめて ON / OFF にできます。
-- **表情を占有**: ON の間はジェスチャーやまばたきに邪魔されず、Kaotsuki だけで登録した表情を操作できます。口パクは ON の間も動かすか選べます。
-- **同期パラメータは必要な分だけ**: 255 本までは 18 bit。255 本を超えると 255 本ごとに 16 bit ずつ増えます（最大 3825 本）。
-- **単体アプリ**: 送り手はインストール不要の単体 exe で、Unity からも起動できます。
-- **区切りで折り畳み**: `---目---` のような区切りのブレンドシェイプで、Inspector と送り手の一覧を折り畳みます。
-- **衣装違いでマップを共有**: 素体の Prefab に組み込めば、衣装違いの Prefab Variant で同じマップを使えます。
-- **マップの自動切換え**: VRChat でアバターを変えると、送り手がそのアバターのマップに切り換えます。
-- **表情の保存と AnimationClip**: 作った表情をファイルに保存して別のアバターでも読み込めます。送り手は Unity の AnimationClip を直接読み込み・保存できます。
+使い方: <https://ghp.maaaaa.net/Face-Util/>
 
 ## 動作環境
 
-- Unity 2022.3
-- VRChat SDK - Avatars 3.7.0 以降
-- Modular Avatar 1.17.0 以降
-- NDMF 1.14.0 以降
-- 送り手: Windows 10 / 11、Microsoft Edge WebView2 ランタイム（Windows 11 は標準搭載）
+| 項目 | 要件 |
+|---|---|
+| Unity | 2022.3 |
+| VRChat SDK - Avatars | 3.7.0 以降 |
+| Modular Avatar | 1.17.0 以上、2.0.0 未満 |
+| NDMF | 1.14.0 以上、2.0.0 未満 |
+| 送り手 | Windows 10 / 11、Microsoft Edge WebView2 ランタイム（Windows 11 には入っています） |
 
-- 任意: AAO Avatar Optimizer（Freeze BlendShapes で固定したブレンドシェイプを操作対象から外します）、Avatar Blink Fix（顔のメッシュの修正の後で組み込みます）
+AAO Avatar Optimizer と Avatar Blink Fix が入っていれば連携します。
 
 ## インストール
 
-VPM に対応した VCC または ALCOM のプロジェクトへ、このパッケージを追加してください。
-VRChat SDK、Modular Avatar、NDMF は依存パッケージとして自動で追加され、送り手アプリもパッケージに同梱されます。
+1. VCC / ALCOM に `https://vpm.maaaaa.net/index.json` を追加します。
+2. プロジェクトの Manage Project で「Poyo's Face Util」を追加します。
 
-VCC を使わない場合は、Release の `.unitypackage` を導入し、依存パッケージを別途追加してください。
-`.unitypackage` には送り手アプリが含まれないため、Release に添付した `KaotsukiSender.exe` を使ってください。
+VRChat SDK・Modular Avatar・NDMF も自動で追加されます。送り手のアプリもパッケージに入っています。
+
+VCC を使わない場合は、[リリースページ](https://github.com/Poyotoron/Face-Util/releases)の `.unitypackage` をインポートし、依存パッケージを別に入れてください。`.unitypackage` には送り手が入っていないので、同じリリースにある `FaceUtilSender.exe` を使ってください。
 
 ## 使い方
 
-1. Hierarchy でアバターを右クリックし、`Kaotsuki` → `Setup` を選びます。
-2. 作成された `Kaotsuki` の Inspector で、操作するメッシュとブレンドシェイプを選びます。
+1. Hierarchy でアバターを右クリックし、`Poyo's Face Util` → `Setup` を選びます。
+2. できた `Face Util` オブジェクトの Inspector で、動かすブレンドシェイプを選びます。
 3. アバターをアップロードします。
-4. VRChat の Action Menu → Options → OSC → `Enabled` で OSC を有効にします。
-5. Unity の Inspector にある `送り手を起動` を押します。`Tools > Kaotsuki > Open Sender` または `Bin~/KaotsukiSender.exe` からも起動できます。
-6. 送り手でアバターのマップを選びます。送り手が Kaotsuki を ON にするので、スライダーを動かすと表情が変わります。
-7. VRChat でアバターを変えると、送り手のマップも自動で切り替わります。
-
-詳しい操作方法は[使い方ドキュメント](https://ghp.maaaaa.net/Kaotsuki/)を参照してください。
-
-## 区切りと折り畳み
-
-`---目---` や `===口===` のように、名前の先頭か末尾に `-` や `=` が 2 つ以上続くブレンドシェイプを「区切り」として扱い、
-次の区切りまでをまとめて折り畳みます。`【目】` や `★口★` のように、先頭か末尾が記号で中身の無いブレンドシェイプも区切りになります。
-区切りは中身の無いダミーとみなし、操作の対象にしません。
-
-自動で判定できない区切りや、誤って区切りになったブレンドシェイプは、Inspector の `区切りを編集` で直せます。
-区切りごとの `ON` / `OFF` で、まとめて登録を切り替えることもできます。
-
-## 衣装違いのアバターでマップを共有する
-
-マップは Inspector の `マップ名` ごとに作られます（Setup したときのアバター名が入ります）。
-素体の Prefab を開いて Setup すると、衣装違いの Prefab Variant にも同じマップ名が引き継がれ、1 つのマップを共有します。
-送り手は、そのマップを使うどのアバターに着替えても同じマップに切り換えます。
-
-登録するブレンドシェイプの構成が違うアバターどうしは、同じマップを使えません。
-構成が違うアバターで書き出すと、他のアバターの登録が外れ、Unity に警告が出ます。
-
-## 表情の保存と AnimationClip
-
-送り手の `表情を保存…` で、既定値から変えたブレンドシェイプだけを表情ファイルに保存します。
-保存先の既定は `%LOCALAPPDATA%\Kaotsuki\Expressions\` です。
-表情ファイルはメッシュのパスとブレンドシェイプ名で記録されるので、別のアバターで読み込んでも同じ名前のブレンドシェイプに適用されます。
-
-Unity の Inspector にある `表情ファイルから AnimationClip を作る…` で、表情ファイルからそのアバター用の AnimationClip を作れます。
-クリップには、登録したすべてのブレンドシェイプの値が入ります。
-
-送り手の `表情を読み込む…` では、Unity の AnimationClip（`.anim`）も開けます。クリップの表情がそのままアバターに反映されるので、
-スライダーで調整してから `AnimationClip として保存…` で同じファイルに上書きできます。上書きしても `.meta` は変わらないため、
-そのクリップを使っている Animator はそのまま新しい表情になります。
-
-- AnimationClip は、Unity の設定（Project Settings → Editor → Asset Serialization）が `Force Text` で保存されたものを読めます。
-- 時間で変化するクリップは、各ブレンドシェイプの最初のキーの値を使います。
-- 保存したクリップは Unity に切り替えたときに読み込まれます。`Assets/` の中に保存してください。
-
-## 口パクとまばたき
-
-口パクやまばたきに使われるブレンドシェイプも登録できます。Kaotsuki が OFF の間は、普段どおり口パク・まばたきします。
-ON の間は Kaotsuki の値で表情が決まり、口パクは Expression Menu または送り手の `口パク` で動かすかを選べます。
-
-Inspector の一覧では、口パク・まばたきに使われるブレンドシェイプに `（口パク）` / `（まばたき）` と表示されます。
-
-## 他のツールとの併用
-
-- **AAO Avatar Optimizer**: Freeze BlendShapes で固定するブレンドシェイプは、ビルド時にメッシュから消えるため操作できません。
-  Inspector の一覧に `（固定）` と表示され、登録の対象から外れます。
-- **Avatar Blink Fix**: ビルド時に顔のメッシュを修正した後で Kaotsuki を組み込むので、修正後の顔のまま操作できます。
-
-## 送り手の操作
-
-| 操作 | 動作 |
-|---|---|
-| `Kaotsuki` トグル | 受け手の ON / OFF を切り替えます（起動時は ON）。OFF の間は普段の表情に戻り、スライダーの位置は残ります。ON に戻すと元の表情に戻ります。 |
-| `口パク` トグル | Kaotsuki が ON の間も口パクを動かすかを切り替えます（起動時は OFF）。 |
-| `リセット` | スライダーと表情を既定値へ戻します。ON / OFF は変わりません。 |
-| `↺` | そのブレンドシェイプを既定値へ戻します。 |
-| 数値欄 | ウェイトを 0〜100 の数値で入力し、Enter で反映します。値は約 0.4 刻みに丸められます。 |
-| 検索 | 名前の一部からブレンドシェイプを絞り込みます。 |
-| `表情を保存…` / `表情を読み込む…` | 今の表情をファイルに保存し、あとで読み込みます。読み込みでは AnimationClip（`.anim`）も開けます。 |
-| `AnimationClip として保存…` | 今の表情を、登録したすべてのブレンドシェイプの値を持つ AnimationClip として保存します。 |
-| `⚙` | OSC の送信先、スロットを切り替えるまでの保持時間、VRChat からの受信を設定します。 |
-
-Expression Menu の `Kaotsuki` にある `ON` と `口パク` を切り替えると、送り手のトグルにも反映されます（VRChat から受信しているとき）。
+4. VRChat の Action Menu で、Options → OSC → `Enabled` をオンにします。
+5. Inspector の `送り手を起動` を押します。
+6. 送り手のスライダーを動かすと、アバターの表情が変わります。
 
 ## 注意
 
-> ON の間は、登録したブレンドシェイプが**すべて** Kaotsuki の値で上書きされます。体型や衣装用の縮小など、表情以外で触られたくないものは Inspector で OFF にしてください。
-
-- 登録を変えたら**アップロードし直してください**。マップは Unity でビルドするたびに更新されますが、VRChat 上のアバターはアップロードするまで古いままです。
-- 登録数が多いと同期パラメータを多く使います。VRChat の上限（256 bit）は他のギミックと共有なので、表情に使わないブレンドシェイプは Inspector で OFF にしてください。
-- パラメータを追加したアバターを上書きアップロードして OSC が効かない場合は、Action Menu → Options → OSC → `Reset Config` を実行してください。
-- 他のプレイヤーからの見え方は同期の間隔に左右されます。複数のスライダーを動かすと、反映まで少し時間がかかります。
-- マップの自動切換えは、アップロード済みのアバターの ID で行います。初めてアップロードしたアバターは、アップロード後に一度 Play Mode に入るか `マップを書き出す` を押してください。
-- 送り手は VRChat からの OSC を `127.0.0.1:9001` で受け取ります。他の OSC アプリが 9001 番を使っていると受け取れません。その場合も送信は使えます。受信ポートは `⚙` で変えられます。
-
-- 以前のバージョンからの更新で、`【目】` のような区切りが新しく判定されたアバターは、操作の対象が変わります。更新後にアップロードし直してください。
-
-## OSC の仕様
-
-自作ツールから送信する場合は、次のアドレスを使います。
-
-| アドレス | 型 | 値 |
-|---|---|---|
-| `/avatar/parameters/Kaotsuki/Enabled` | Bool | ON / OFF |
-| `/avatar/parameters/Kaotsuki/LipSync` | Bool | ON の間も口パクを動かすか |
-| `/avatar/parameters/Kaotsuki/Index` | Int32 | 0〜255（0 は対象なし） |
-| `/avatar/parameters/Kaotsuki/Value` | Int32 | 0〜255（ウェイト 0〜100 に対応） |
-| `/avatar/parameters/Kaotsuki/Index2`、`Index3` … | Int32 | 2 枠目以降の番号（登録数が 255 を超えたアバターのみ） |
-| `/avatar/parameters/Kaotsuki/Value2`、`Value3` … | Int32 | 2 枠目以降の値 |
-
-255 本ごとに 1 組（枠）で、枠ごとの送り方は 1 枠目と同じです。異なる枠は同時に送れます。
-
-値を送るときは、同じスロットの更新でも毎回 `Index`、`Value` の順に送信してください。
-アバター側の `Index` は、メニューで OFF にしたときやアバターを読み込み直したときに 0 へ戻ります。
-別のスロットへ切り替えるときは、前の送信から一定時間空けてください（送り手の既定の保持時間は 250ms です）。
-
-マップは `%LOCALAPPDATA%\Kaotsuki\Maps\<マップ名>.json` に保存されます。
-主なキーは `mapName`、`avatars`、`parameters.channels`、`slots[].channel`、`slots[].index`、`mesh`、`blendShape`、`defaultWeight`、`group` です。
-
-表情ファイルは `format` が `kaotsuki-expression` の JSON で、`blendShapes` に `mesh`、`blendShape`、`weight`（0〜100）を持ちます。
+- ON の間は、登録したブレンドシェイプがすべて送り手の値になります。体型の調整など、表情に使わないブレンドシェイプは Inspector でオフにしてください。
+- 動かすブレンドシェイプを変えたら、アップロードし直してください。
+- 登録数が多いと、同期パラメータを多く使います。255 本までは 18 bit です。
+- パラメータを追加したアバターを上書きでアップロードして OSC が効かないときは、Action Menu の Options → OSC → `Reset Config` を実行してください。
 
 ## 送り手のビルド
 
@@ -157,8 +49,8 @@ Rust と `tauri-cli` 2 系を用意し、`Sender~/src-tauri` で次を実行し�
 cargo tauri build --no-bundle
 ```
 
-生成された `target/release/kaotsuki-sender.exe` を `Bin~/KaotsukiSender.exe` に配置してください。
+できた `target/release/face-util-sender.exe` を `Bin~/FaceUtilSender.exe` に置きます。
 
 ## ライセンス
 
-MIT License. 詳細は [LICENSE](LICENSE) を参照してください。
+MIT License（[LICENSE](LICENSE)）

@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Poyo.Kaotsuki.Editor
+namespace Poyo.FaceUtil.Editor
 {
     /// <summary>自動判定で区切りになった理由。</summary>
-    internal enum KaotsukiSeparatorRule
+    internal enum FaceUtilSeparatorRule
     {
         None,
         // 先頭か末尾に区切り文字が 2 つ続く。
@@ -15,19 +15,19 @@ namespace Poyo.Kaotsuki.Editor
     }
 
     /// <summary>ブレンドシェイプの区切り（カテゴリの境目に置かれたダミー）の判定。</summary>
-    internal static class KaotsukiSeparators
+    internal static class FaceUtilSeparators
     {
         internal const string UnnamedGroup = "（名前なし）";
         private static readonly char[] SeparatorChars = { '-', '=', '－', '＝', '─', '━', '―' };
 
-        internal static KaotsukiSeparatorRule[] ResolveAuto(Mesh mesh)
+        internal static FaceUtilSeparatorRule[] ResolveAuto(Mesh mesh)
         {
             if (mesh == null)
             {
-                return Array.Empty<KaotsukiSeparatorRule>();
+                return Array.Empty<FaceUtilSeparatorRule>();
             }
 
-            var result = new KaotsukiSeparatorRule[mesh.blendShapeCount];
+            var result = new FaceUtilSeparatorRule[mesh.blendShapeCount];
             Vector3[] vertices = null;
             Vector3[] normals = null;
             Vector3[] tangents = null;
@@ -39,7 +39,7 @@ namespace Poyo.Kaotsuki.Editor
                     (IsSeparatorChar(trimmed[0]) && IsSeparatorChar(trimmed[1]) ||
                      IsSeparatorChar(trimmed[trimmed.Length - 2]) && IsSeparatorChar(trimmed[trimmed.Length - 1])))
                 {
-                    result[i] = KaotsukiSeparatorRule.Characters;
+                    result[i] = FaceUtilSeparatorRule.Characters;
                     continue;
                 }
 
@@ -59,7 +59,7 @@ namespace Poyo.Kaotsuki.Editor
                 // NOTE: 全ブレンドシェイプの頂点を読むと重いので、名前の条件に当たったものだけ中身を調べる。
                 if (IsEmpty(mesh, i, vertices, normals, tangents))
                 {
-                    result[i] = KaotsukiSeparatorRule.EmptySymbol;
+                    result[i] = FaceUtilSeparatorRule.EmptySymbol;
                 }
             }
 
@@ -85,7 +85,7 @@ namespace Poyo.Kaotsuki.Editor
             return true;
         }
 
-        internal static bool[] Resolve(Mesh mesh, KaotsukiMeshEntry entry, KaotsukiSeparatorRule[] auto)
+        internal static bool[] Resolve(Mesh mesh, FaceUtilMeshEntry entry, FaceUtilSeparatorRule[] auto)
         {
             if (mesh == null)
             {
@@ -98,7 +98,7 @@ namespace Poyo.Kaotsuki.Editor
             for (var i = 0; i < result.Length; i++)
             {
                 var name = mesh.GetBlendShapeName(i);
-                var automatic = auto[i] != KaotsukiSeparatorRule.None;
+                var automatic = auto[i] != FaceUtilSeparatorRule.None;
                 result[i] = automatic && (removed == null || !removed.Contains(name)) ||
                             added != null && added.Contains(name);
             }
@@ -107,19 +107,19 @@ namespace Poyo.Kaotsuki.Editor
         }
 
         // NOTE: 区切り文字で判定したものは、Mouth (L) のような括弧を残すため記号を取り除かない。
-        internal static string GroupName(string name, KaotsukiSeparatorRule rule)
+        internal static string GroupName(string name, FaceUtilSeparatorRule rule)
         {
             var trimmed = (name ?? string.Empty).Trim();
             var start = 0;
             var end = trimmed.Length;
             while (start < end && (IsSeparatorChar(trimmed[start]) || char.IsWhiteSpace(trimmed[start]) ||
-                                   rule == KaotsukiSeparatorRule.EmptySymbol && IsSymbol(trimmed[start])))
+                                   rule == FaceUtilSeparatorRule.EmptySymbol && IsSymbol(trimmed[start])))
             {
                 start++;
             }
 
             while (end > start && (IsSeparatorChar(trimmed[end - 1]) || char.IsWhiteSpace(trimmed[end - 1]) ||
-                                  rule == KaotsukiSeparatorRule.EmptySymbol && IsSymbol(trimmed[end - 1])))
+                                  rule == FaceUtilSeparatorRule.EmptySymbol && IsSymbol(trimmed[end - 1])))
             {
                 end--;
             }
@@ -127,7 +127,7 @@ namespace Poyo.Kaotsuki.Editor
             return start == end ? UnnamedGroup : trimmed.Substring(start, end - start);
         }
 
-        internal static void SetSeparator(KaotsukiMeshEntry entry, string name, bool separator, bool automatic)
+        internal static void SetSeparator(FaceUtilMeshEntry entry, string name, bool separator, bool automatic)
         {
             if (entry.addedSeparators == null)
             {

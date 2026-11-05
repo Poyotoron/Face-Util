@@ -1,8 +1,8 @@
 {
-    "name": "net.maaaaa.kaotsuki.Editor",
-    "rootNamespace": "Poyo.Kaotsuki.Editor",
+    "name": "net.maaaaa.face-util.Editor",
+    "rootNamespace": "Poyo.FaceUtil.Editor",
     "references": [
-        "net.maaaaa.kaotsuki.Runtime",
+        "net.maaaaa.face-util.Runtime",
         "nadena.dev.ndmf",
         "nadena.dev.ndmf.runtime",
         "nadena.dev.modular-avatar.core"
@@ -16,6 +16,8 @@
     "precompiledReferences": [],
     "autoReferenced": false,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        { "name": "net.maaaaa.kaotsuki", "expression": "0.0.0", "define": "FACE_UTIL_HAS_LEGACY" }
+    ],
     "noEngineReferences": false
 }

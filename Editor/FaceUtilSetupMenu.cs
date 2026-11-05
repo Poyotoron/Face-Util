@@ -6,11 +6,11 @@ using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using Object = UnityEngine.Object;
 
-namespace Poyo.Kaotsuki.Editor
+namespace Poyo.FaceUtil.Editor
 {
-    internal static class KaotsukiSetupMenu
+    internal static class FaceUtilSetupMenu
     {
-        [MenuItem(KaotsukiInfo.SetupMenuPath, false, KaotsukiInfo.SetupMenuPriority)]
+        [MenuItem(FaceUtilInfo.SetupMenuPath, false, FaceUtilInfo.SetupMenuPriority)]
         private static void Setup(MenuCommand command)
         {
             if (IsDuplicateInvocation(command))
@@ -32,37 +32,37 @@ namespace Poyo.Kaotsuki.Editor
             GameObject lastCreated = null;
             foreach (var root in roots)
             {
-                var existing = root.GetComponentsInChildren<KaotsukiReceiver>(true);
+                var existing = root.GetComponentsInChildren<FaceUtilReceiver>(true);
                 if (existing.Length > 0)
                 {
                     Selection.activeGameObject = existing[0].gameObject;
-                    EditorUtility.DisplayDialog("Kaotsuki", "このアバターには既に Kaotsuki があります。", "OK");
+                    EditorUtility.DisplayDialog(FaceUtilInfo.DisplayName, "このアバターにはすでに Poyo's Face Util があります。", "OK");
                     continue;
                 }
 
-                var go = new GameObject("Kaotsuki");
+                var go = new GameObject("Face Util");
                 go.transform.SetParent(root, false);
-                var receiver = go.AddComponent<KaotsukiReceiver>();
+                var receiver = go.AddComponent<FaceUtilReceiver>();
                 // NOTE: 素体の Prefab で Setup すると、その Variant（別衣装）にも同じマップ名が継承され、1 つのマップを共有できる。
-                receiver.mapName = KaotsukiMapWriter.SanitizeName(root.name);
+                receiver.mapName = FaceUtilMapWriter.SanitizeName(root.name);
                 // NOTE: 通常の Modular Avatar の手順で、利用者がメニューの置き場所を変えられるようにする。
                 go.AddComponent<ModularAvatarMenuInstaller>();
                 var item = go.AddComponent<ModularAvatarMenuItem>();
-                KaotsukiMenuUpgrader.BuildSubMenu(item, "Kaotsuki Setup");
+                FaceUtilMenuUpgrader.BuildSubMenu(item, "Face Util Setup");
 
                 var body = FindBody(root);
                 if (body != null)
                 {
-                    receiver.meshes.Add(new KaotsukiMeshEntry { renderer = body });
+                    receiver.meshes.Add(new FaceUtilMeshEntry { renderer = body });
                 }
                 else
                 {
                     Debug.LogWarning(
-                        "[Kaotsuki] Body メッシュが見つかりませんでした。Inspector でメッシュを追加してください。",
+                        "[Poyo's Face Util] Body メッシュが見つかりませんでした。Inspector でメッシュを追加してください。",
                         go);
                 }
 
-                Undo.RegisterCreatedObjectUndo(go, "Kaotsuki Setup");
+                Undo.RegisterCreatedObjectUndo(go, "Face Util Setup");
                 lastCreated = go;
             }
 
@@ -72,7 +72,7 @@ namespace Poyo.Kaotsuki.Editor
             }
         }
 
-        [MenuItem(KaotsukiInfo.SetupMenuPath, true)]
+        [MenuItem(FaceUtilInfo.SetupMenuPath, true)]
         private static bool ValidateSetup()
         {
             return Selection.activeGameObject != null &&
